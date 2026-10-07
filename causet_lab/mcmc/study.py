@@ -180,6 +180,25 @@ def _coarse_betas_for(N: int, eps: float, n_points: int = N_COARSE) -> np.ndarra
     return np.round(np.concatenate([[0.0], np.geomspace(lo, hi, n_points)]), 6)
 
 
+def _coarse_betas_centered(N: int, eps: float, center_mult: float, n_points: int = N_COARSE) -> np.ndarray:
+    """Same log-width (hi/lo ratio) and point count as _coarse_betas_for,
+    but with the grid's geometric center placed at center_mult times the
+    predicted beta_c, instead of _coarse_betas_for's implicit (and
+    off-center) sqrt(COARSE_LO_MULT * COARSE_HI_MULT) ~ 0.42. Used only
+    for the blind grid-centering robustness check: if the located beta_c
+    tracks the predicted value regardless of where this grid is
+    centered, the match is a genuine located feature; if it instead
+    tracks the grid's center (or its edge), the match is a grid
+    artifact, not a confirmation.
+    """
+    predicted = beta_c_glaser_2018(N, eps)
+    log_half_width = np.sqrt(COARSE_HI_MULT / COARSE_LO_MULT)
+    center = center_mult * predicted
+    lo = max(center / log_half_width, 1e-6)
+    hi = center * log_half_width
+    return np.round(np.concatenate([[0.0], np.geomspace(lo, hi, n_points)]), 6)
+
+
 def _beta_c_formula_uncertainty(N: int, eps: float) -> float:
     """Propagate the published fit's quoted coefficient uncertainties
     (b = 1.66 +/- 0.03, c = 4.09+/-0.50 /eps^3 - 27.77+/-2.45 /eps^2)
@@ -438,6 +457,34 @@ def _peak_width_fwhm(betas, variances):
     return float(right - left), peak_val
 
 
+def _support_window_check(converged_points, beta_c, beta_c_formula, window=0.25):
+    """Sanity check on a located beta_c: a genuine interior variance
+    maximum needs converged points on BOTH sides of it. Since the
+    coarse/fine grids are centered on the published formula's
+    prediction, also report converged coverage in a +/-window band
+    around that prediction specifically. If beta_c itself turns out to
+    equal the single largest converged beta, the 'located peak' has no
+    converged data confirming the variance actually turns back down
+    past it -- it is the edge of usable data, not a confirmed peak, and
+    must be reported as such rather than counted as a located feature.
+    """
+    betas = [p["beta"] for p in converged_points]
+    max_converged_beta = max(betas) if betas else float("nan")
+    is_right_censored = (
+        np.isfinite(beta_c) and np.isfinite(max_converged_beta)
+        and abs(beta_c - max_converged_beta) < 1e-6
+    )
+    lo, hi = (1.0 - window) * beta_c_formula, (1.0 + window) * beta_c_formula
+    n_below = sum(1 for b in betas if lo <= b < beta_c_formula)
+    n_above = sum(1 for b in betas if beta_c_formula <= b <= hi)
+    return {
+        "max_converged_beta": max_converged_beta,
+        "beta_c_is_right_censored": is_right_censored,
+        "n_converged_within_25pct_below": n_below,
+        "n_converged_within_25pct_above": n_above,
+    }
+
+
 def _coarse_worker(args):
     (N, beta, seed, base_sweeps, base_burnin, measure_every, eps,
      min_eff_samples, max_multiplier) = args
@@ -596,6 +643,7 @@ def run_scan_for_N(
     combined_sigma = float(np.hypot(bootstrap["beta_c_std"], formula_sigma)) if np.isfinite(bootstrap["beta_c_std"]) else formula_sigma
     beta_c_z = abs(beta_c - beta_c_formula) / combined_sigma if np.isfinite(beta_c) and combined_sigma > 0 else float("nan")
     beta_c_pass = np.isfinite(beta_c_z) and beta_c_z < BETA_C_Z_PASS
+    support_window = _support_window_check(converged, beta_c, beta_c_formula)
 
     # --- bimodality of the pooled action distribution at (the converged
     # point nearest) beta_c ---
@@ -608,6 +656,7 @@ def run_scan_for_N(
         "N": N, "eps": eps, "points": points, "beta_c": beta_c,
         "beta_c_formula": beta_c_formula, "beta_c_formula_sigma": formula_sigma,
         "beta_c_z": beta_c_z, "beta_c_pass": beta_c_pass,
+        "support_window": support_window,
         "peak_width": width, "peak_height": peak_height,
         "bootstrap": bootstrap, "n_undersampled": n_undersampled,
         "n_converged": len(converged),
@@ -618,6 +667,44 @@ def run_scan_for_N(
         "final_prod_sweeps": final_prod_sweeps, "final_prod_burnin": final_prod_burnin,
         "escalation_stalled": stalled,
     }
+
+
+def run_blind_center_test(N, eps, center_mults, seeds=None, **scan_kwargs):
+    """Robustness check on a located beta_c: rerun run_scan_for_N with
+    the coarse scout grid deliberately mis-centered at each multiple of
+    the predicted beta_c in center_mults (same log-width and point count
+    as the normal grid -- see _coarse_betas_centered), with every other
+    setting identical to a normal run. If the located beta_c lands near
+    the same value (and near the published prediction) regardless of
+    where the grid was centered, the match is a located feature of the
+    action, not an artifact of where the scout happened to look; if it
+    instead tracks the grid center (or, per the UNCONVERGED-coverage
+    issue this was written to check, the edge of wherever convergence
+    happened to stop), say so explicitly rather than reporting PASS.
+    """
+    seeds = seeds if seeds is not None else PRODUCTION_SEEDS
+    predicted = beta_c_glaser_2018(N, eps)
+    results = {}
+    for cm in center_mults:
+        coarse_betas = _coarse_betas_centered(N, eps, center_mult=cm)
+        scan = run_scan_for_N(N, eps, seeds=seeds, coarse_betas=coarse_betas, **scan_kwargs)
+        max_converged_beta = max(
+            (p["beta"] for p in scan["points"] if p["min_eff_samples_met_all"]), default=float("nan"),
+        )
+        results[cm] = {
+            "center_beta": cm * predicted,
+            "beta_c": scan["beta_c"],
+            "bootstrap_std": scan["bootstrap"]["beta_c_std"],
+            "n_converged": scan["n_converged"],
+            "n_points": len(scan["points"]),
+            "max_converged_beta": max_converged_beta,
+            "beta_c_is_max_converged": (
+                np.isfinite(scan["beta_c"]) and np.isfinite(max_converged_beta)
+                and abs(scan["beta_c"] - max_converged_beta) < 1e-9
+            ),
+            "scan": scan,
+        }
+    return {"N": N, "eps": eps, "predicted": predicted, "by_center": results}
 
 
 # --------------------------------------------------------------- deep phase
@@ -992,6 +1079,38 @@ def write_report(controls, scans, deep, hysteresis, kr_dist, sprinkle_dist, stud
                 f"{s['n_undersampled']} / {len(s['points'])} | {rt_str} |"
             )
         lines.append("")
+        lines.append(
+            "**Is the located beta_c a confirmed interior peak, or just where convergence ran out?** "
+            "A genuine variance maximum needs converged points on both sides of it. The grid is "
+            "centered on the formula's own prediction, so this also reports converged coverage in a "
+            "+/-25% band around that prediction specifically."
+        )
+        lines.append("")
+        lines.append("| N | max converged beta | beta_c IS the max converged beta | converged within 25% below prediction | converged within 25% above prediction |")
+        lines.append("|---|---|---|---|---|")
+        n_right_censored = 0
+        for N in study_ns:
+            sw = scans[(eps, N)]["support_window"]
+            if sw["beta_c_is_right_censored"]:
+                n_right_censored += 1
+            lines.append(
+                f"| {N} | {sw['max_converged_beta']:.5f} | "
+                f"{'**YES -- right-censored, not confirmed**' if sw['beta_c_is_right_censored'] else 'no'} | "
+                f"{sw['n_converged_within_25pct_below']} | {sw['n_converged_within_25pct_above']} |"
+            )
+        lines.append("")
+        if n_right_censored:
+            lines.append(
+                f"**{n_right_censored} / {len(study_ns)} N at eps={eps} have a right-censored beta_c**: "
+                "the located value is exactly the largest converged beta in the scan, meaning there is "
+                "*no* converged data showing the variance actually turns back down past it. The z-score "
+                "PASS reported above for these N confirms only that the right-censoring point happens to "
+                "land near the formula's prediction -- not that an interior peak was independently "
+                "located and found to agree. Where this flag is set, do not read the PASS as a genuine "
+                "confirmation (see 'Known limitations' below for the grid-centering test that checks "
+                "whether this value is at least stable, i.e. not a pure grid artifact)."
+            )
+            lines.append("")
         if any(scans[(eps, N)]["escalation_stalled"] for N in study_ns):
             stalled_here = [N for N in study_ns if scans[(eps, N)]["escalation_stalled"]]
             lines.append(
@@ -1161,6 +1280,46 @@ def write_report(controls, scans, deep, hysteresis, kr_dist, sprinkle_dist, stud
     )
     lines.append("")
 
+    # ----------------------------------------------------------- known limitations
+    lines.append("## Known limitations")
+    lines.append("")
+    n_hyst_disagree = sum(1 for k in all_keys if not hysteresis[k]["agrees"])
+    n_bimodal_found = sum(1 for k in all_keys if scans[k]["histogram"]["n_peaks"] >= 2)
+    n_right_censored_total = sum(1 for k in all_keys if scans[k]["support_window"]["beta_c_is_right_censored"])
+    lines.append(
+        f"**The first-order barrier at beta_c is not crossed cleanly.** Hysteresis disagreed between "
+        f"random-start and layered-start chains (even with parallel tempering active) for "
+        f"{n_hyst_disagree} / {len(all_keys)} (N, eps) combinations, and the pooled action histogram "
+        f"at beta_c showed the expected double-peak signature in only {n_bimodal_found} / {len(all_keys)}. "
+        "These two findings are consistent with each other: a real first-order transition has a free-"
+        "energy barrier separating the two phases that single-replica moves essentially never cross, and "
+        "replica exchange only helps when neighboring-beta variance distributions overlap enough for a "
+        "swap to be accepted -- near a sharp first-order point they stop overlapping, which is exactly "
+        "where this run's effective-sample counts collapsed and points were marked UNCONVERGED."
+    )
+    lines.append(
+        f"**A related, sharper problem: {n_right_censored_total} / {len(all_keys)} combinations' located "
+        "beta_c is right-censored** -- see the per-eps 'is beta_c a confirmed interior peak' tables above. "
+        "The reported value is exactly the largest converged beta in the scan, with no converged data "
+        "at all above it, so the 'beta_c matches the published formula' PASS for those combinations "
+        "confirms only that the point where convergence ran out happens to land near the prediction, not "
+        "that an interior variance maximum was independently located and found to agree. Only one "
+        "combination in this run (N=30, eps=0.21) had converged coverage on both sides of its located "
+        "peak."
+    )
+    lines.append(
+        "**Implication**: near-transition sampling at larger N (this project's own escalation attempts "
+        "stalled -- doubling PT sweep count did not improve effective-sample counts, see the per-eps "
+        "escalation notes above) or in higher dimension (where interval-size computations and the move "
+        "set both grow more expensive) will need stronger methods than plain replica exchange on a "
+        "single-swap proposal -- e.g. a denser ladder specifically bracketing the barrier (informed by "
+        "a cheap pilot rather than the published formula alone, given the right-censoring problem above), "
+        "cluster or multi-site moves that can cross the barrier in fewer steps, or multicanonical/Wang-"
+        "Landau-style sampling that flattens the free-energy barrier directly instead of relying on "
+        "tempering to route around it."
+    )
+    lines.append("")
+
     # ---------------------------------------------------------------- verdict
     lines.append("## Verdict: do we reproduce the published result?")
     lines.append("")
@@ -1173,7 +1332,12 @@ def write_report(controls, scans, deep, hysteresis, kr_dist, sprinkle_dist, stud
         f"Across all {n_total} (N, eps) combinations tested (N in {study_ns}, eps in {eps_values}):"
     )
     lines.append("")
-    lines.append(f"1. **beta_c matches the published formula** (z < {BETA_C_Z_PASS}): {n_betac_pass} / {n_total}.")
+    lines.append(
+        f"1. **beta_c matches the published formula** (z < {BETA_C_Z_PASS}): {n_betac_pass} / {n_total} "
+        f"-- but {n_right_censored_total} / {n_total} of those located values are right-censored (see "
+        "'Known limitations' below), so this count overstates genuine confirmation; read it alongside "
+        "that section rather than at face value."
+    )
     lines.append(f"2. **Action histogram at beta_c is double-peaked**: {n_bimodal} / {n_total} "
                   "(see per-eps peak-separation-vs-N trend above for whether it also sharpens with N).")
     lines.append(f"3. **High-beta phase matches height~{HIGH_BETA_HEIGHT_TARGET:.0f} target**: {n_height_pass} / {n_total}; "

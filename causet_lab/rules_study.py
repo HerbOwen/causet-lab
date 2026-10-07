@@ -33,7 +33,7 @@ from .battery import analyze_matrix, nanmean, nanstd, nanmean_axis0
 from .measures import height_exponent, dimension_drift, abundance_distance
 from . import plots
 
-RESULTS_DIR = Path(__file__).resolve().parent / "results"
+RESULTS_DIR = Path(__file__).resolve().parent / "results" / "phase2"
 
 STUDY_NS = [500, 1000, 2000, 4000]
 SPRINKLE_CALIBRATION_NS = [500, 1000, 2000, 3000, 4000]

@@ -54,7 +54,7 @@ def transitive_percolation(p: float):
 # does when the frontier is small) collapses the frontier straight back to
 # width 1 and can never recover. Every one of those rules degenerated into a
 # plain chain, deterministically, for every k. See the writeup in
-# results/rules_report.md for the full trace.
+# results/phase2/rules_report.md for the full trace.
 #
 # The fix: these rules now choose parents from *all* existing elements, not
 # just the maximal ones. The frontier's width is then an emergent outcome of

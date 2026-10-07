@@ -308,6 +308,51 @@ def plot_valence_vs_N(
     return outfile
 
 
+def plot_vs_beta(
+    cases: dict,
+    outfile: str,
+    ylabel: str,
+    title: str,
+    transitions: dict = None,
+    xlabel: str = "beta",
+    xscale: str = "linear",
+) -> str:
+    """Plot an observable vs beta, one line per N (or other label).
+
+    cases: {label: {"beta": array, "mean": array, "err": array (optional)}}
+    transitions: optional {label: beta_c} -- draws a vertical dotted line
+    at the located transition point for that label, in matching color.
+    """
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    for i, (label, d) in enumerate(cases.items()):
+        color = _color_for(i)
+        beta = np.asarray(d["beta"], dtype=float)
+        mean = np.asarray(d["mean"], dtype=float)
+        order = np.argsort(beta)
+        beta, mean = beta[order], mean[order]
+        err = d.get("err")
+        if err is not None:
+            err = np.asarray(err, dtype=float)[order]
+        ax.errorbar(
+            beta, mean, yerr=err, marker="o", linestyle="-", color=color,
+            label=label, capsize=2, markersize=4, linewidth=1,
+        )
+        if transitions and transitions.get(label) is not None:
+            ax.axvline(transitions[label], color=color, linestyle=":", linewidth=1, alpha=0.7)
+    if xscale == "log":
+        ax.set_xscale("log")
+    elif xscale == "symlog":
+        ax.set_xscale("symlog", linthresh=1e-4)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.legend(fontsize=7, loc="best")
+    fig.tight_layout()
+    fig.savefig(outfile, dpi=150)
+    plt.close(fig)
+    return outfile
+
+
 def plot_distance_vs_x(
     points: list,
     outfile: str,

@@ -22,7 +22,7 @@ from .rules import local_parents, local_parents_adaptive
 from .battery import analyze_matrix, nanmean, nanstd
 from . import plots
 
-RESULTS_DIR = Path(__file__).resolve().parent / "results"
+RESULTS_DIR = Path(__file__).resolve().parent / "results" / "phase2"
 
 SCALING_NS = [2000, 4000, 8000, 16000]
 SEEDS = [0, 1, 2]

@@ -94,7 +94,10 @@ causet_lab/
   plots.py          every plot the CLI produces
   run.py            CLI (python -m causet_lab.run ...)
   tests/test_controls.py   must pass before any result is trusted
-  results/          generated plots and summary.md land here
+  results/phase2/   generated plots and summary.md land here (controls,
+                    rules study, follow-up, scaling study)
+  mcmc/             Phase 3: MCMC over 2D causal set orders (see
+                    results/phase3/mcmc_2d_report.md)
 ```
 
 ## Representation
@@ -113,7 +116,7 @@ python -m causet_lab.run controls          # sprinkle d=2,3,4, N=500/1000/2000, 
 python -m causet_lab.run junk              # Kleitman-Rothschild junk orders
 python -m causet_lab.run percolation --p 0.01 0.05 0.1 0.3 --N 2000
 python -m causet_lab.run rule --name transitive_percolation --N 2000 --param p=0.1
-python -m causet_lab.run all               # everything, + results/summary.md
+python -m causet_lab.run all               # everything, + results/phase2/summary.md
 ```
 
 Run the tests first:

@@ -20,7 +20,7 @@ from .rules import RULE_FACTORIES, transitive_percolation
 from .battery import analyze_matrix, nanmean, nanstd
 from . import plots
 
-RESULTS_DIR = Path(__file__).resolve().parent / "results"
+RESULTS_DIR = Path(__file__).resolve().parent / "results" / "phase2"
 
 DEFAULT_CONTROL_NS = [500, 1000, 2000]
 DEFAULT_CONTROL_DS = [2, 3, 4]
@@ -361,6 +361,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_scaling.add_argument("--seeds", type=int, nargs="+", default=None,
                             help="override the seed list (default 0 1 2)")
 
+    p_mcmc = sub.add_parser(
+        "mcmc-study",
+        help="Phase 3: Metropolis MCMC over 2D causal set orders weighted by the smeared 2D "
+             "Benincasa-Dowker action, scanning beta to locate the first-order continuum / "
+             "crystalline phase transition (Glaser-O'Connor-Surya 2018); write "
+             "results/phase3/mcmc_2d_report.md.",
+    )
+    p_mcmc.add_argument("--N", type=int, nargs="+", default=None,
+                         help="override the N grid (default 30 40 50 60)")
+    p_mcmc.add_argument("--eps", type=float, nargs="+", default=None,
+                         help="override the eps grid (default 0.21 0.5)")
+    p_mcmc.add_argument("--seeds", type=int, nargs="+", default=None,
+                         help="override the production seed list (default 0 1 2)")
+
     return parser
 
 
@@ -385,6 +399,9 @@ def main(argv=None) -> None:
     elif args.command == "scaling-study":
         from . import scaling_study
         scaling_study.run_scaling_study(study_ns=args.N, seeds=args.seeds)
+    elif args.command == "mcmc-study":
+        from .mcmc import study as mcmc_study
+        mcmc_study.run_mcmc_study(study_ns=args.N, eps_values=args.eps, seeds=args.seeds)
 
 
 if __name__ == "__main__":

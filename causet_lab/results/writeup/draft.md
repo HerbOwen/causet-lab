@@ -278,7 +278,7 @@ beta_c, used only as a pilot-range anchor, not an assumption the two
 models share a beta_c) since there is no a priori reason quenched
 disorder should leave beta_c unchanged. Stage 2 (n=50) is a one-line
 change to the driver's size constant, not attempted yet
-[`results/phase5/random_background_report.md @ 1ff7ef3`, this section].
+[`results/phase5/random_background_report.md @ 3ae1ad5`, this section].
 
 **Equivalence check**: placing the background exactly at the regular
 lattice's integer positions reproduces `lattice_to_matrix` bit-for-bit
@@ -536,7 +536,7 @@ throughout):
 | 2D orders (WL/MUCA) | 40 | 0.5 | ~1750s | 457.3s (windowed) | -- | same |
 | 2D orders (WL/MUCA) | 30 | 0.1 | 735.5s | 150.1s | 885.6s | `results/phase4/lattice_gas_2d_report.md @ 0f85d22` |
 | Lattice gas | 30 | 0.1 | 1613.7s | 948.2s | 2561.8s (~42.7 min) | same |
-| Random background (5 realizations) | 30 | 0.1 | 387.3-1435.5s | 141.1-275.6s | 1623.9s total (all 5, 4 cores) | `results/phase5/random_background_report.md @ 1ff7ef3` |
+| Random background (5 realizations) | 30 | 0.1 | 387.3-1435.5s | 141.1-275.6s | 1623.9s total (all 5, 4 cores) | `results/phase5/random_background_report.md @ 3ae1ad5` |
 | Regular lattice, matched pipeline (5 chain seeds) | 30 | 0.1 | 1345.0-5704.3s | 511.1-1057.9s | 6659.9s total (all 5, 4 cores) | same report, matched-pipeline rerun section |
 
 **Multiprocessing**: Phase 5 stage 1 runs 5 independent realizations
@@ -551,23 +551,27 @@ observation, not a settled finding).
 
 ## Summary of [TBD] items and claims needing follow-up
 
-1. **Abstract**: the actual random-vs-regular-background finding.
-2. **Section 5**: all per-realization beta_c values and their
-   cross-realization spread; hot/cold-phase MM dimension, height,
-   ordering fraction, layer count (and spread) at n=30; the
-   P_beta_c(S) shape comparison; the plain yes/no (or "same within
-   error") answer to whether the transition depends on the regular
-   grid.
-3. **Section 5 control numbers** (MM dim 2.267/2.061, abundance
-   distance 0.089/0.060, ordering fraction 0.8768/0.8766) are real,
-   obtained this session, but **uncommitted** -- no git commit exists
-   to cite yet; re-cite once `tests/test_random_bg.py` is committed.
-4. **Appendix table**'s Random background row is entirely [TBD].
-5. **Code availability**: no repository URL assigned yet.
-6. **Section 4's N=40, eps=0.1 formula leading-term** comparison was
+Resolved since the previous draft (all now cited to
+`results/phase5/random_background_report.md @ 3ae1ad5` unless noted):
+the random-vs-regular-background finding (Abstract, Section 5); all
+per-realization beta_c values and cross-realization spread; the
+matched-pipeline 5-chain-seed regular-lattice rerun and the z=51.8 gap
+significance; the mechanism check (floor/hot-mean-action comparison,
+hypothesis not confirmed); hot/cold-phase observables; the P_beta_c(S)
+shape check and the upstreamed `_peak_diagnostics` mass-filter fix
+(`causet_lab/mcmc/muca.py`, same commit) with its regression tests and
+its re-check against Phase 3b/4's committed conclusions; the Section 5
+control numbers (now committed, no longer `[uncommitted]`); the
+Appendix table's random-background and matched-pipeline-regular-
+lattice rows.
+
+Still open:
+
+1. **Code availability**: no repository URL assigned yet.
+2. **Section 4's N=40, eps=0.1 formula leading-term** comparison was
    not separately tabulated (only N=30, eps=0.1 was); add if a reviewer
    wants the N=40 analogue.
-7. **Claim I am least certain how to support cleanly**: the Section 4
+3. **Claim I am least certain how to support cleanly**: the Section 4
    "PT vs MUCA agreement" framing. The two numbers (0.14797 and
    0.1478) agree, but since the PT value is independently flagged as
    right-censored in its own source report, I am not fully confident
@@ -576,10 +580,16 @@ observation, not a settled finding).
    "consistent with, but not proof of" a real feature there) --
    flagging this for a second opinion before it goes in anything more
    final than this draft.
-8. **Wang-Landau and PT themselves are described by name without a
+4. **Wang-Landau and PT themselves are described by name without a
    pinned citation** (no paper using those exact terms was fetched and
    checked against this project's code, unlike the four causal-set
    papers and the Berg-Neuhaus one, which were). Add standard
    citations (Wang & Landau 2001; parallel tempering's standard
    references) if the published version needs them -- deliberately
    left out here rather than guessed.
+5. **New from this round**: the mechanism behind the beta_c shift
+   (Section 5) and the regular lattice's 4x-slower mixing under this
+   pipeline (Section 5/6) are both reported as genuine open questions,
+   not just formatting placeholders -- flagging explicitly so a
+   reviewer doesn't mistake "ruled out the obvious explanation" for
+   "found the real one."

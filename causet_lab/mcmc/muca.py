@@ -808,6 +808,20 @@ def trim_unreachable_lower_bins(ln_g, H, ever_visited, bin_lo, bin_width, n_bins
 
 MIN_BARRIER_FOR_BIMODAL = 0.5  # ln(peak/valley) below this is noise on a single hump, not two phases
 
+# A *shallow* dip on one broad hump is what MIN_BARRIER_FOR_BIMODAL guards
+# against. It does not guard against a *deep* dip where one side of the
+# "peak pair" is itself just numerical noise in an exponentially suppressed
+# tail: found during the Phase 5 random-background analysis
+# (results/phase5/random_background_report.md), where 4/5 realizations'
+# P_beta_c(S) were flagged with a large barrier (17-21) purely because
+# _find_two_peaks picked up a local maximum sitting 8-11 orders of
+# magnitude below the real mode -- peak_val's averaging is dominated by
+# the real peak regardless of how negligible the other one is, so the
+# barrier alone never catches this. Both candidate peaks must therefore
+# also carry a non-negligible fraction of the distribution's mode before
+# being treated as a real two-phase structure.
+MIN_PEAK_MASS_FRACTION = 0.01  # each candidate peak must exceed this fraction of p.max()
+
 
 def _find_two_peaks(p):
     """Local maxima of a 1D array, merging maxima within 2 bins of each
@@ -824,21 +838,26 @@ def _find_two_peaks(p):
     return top2
 
 
-def _peak_diagnostics(p, min_barrier=MIN_BARRIER_FOR_BIMODAL):
+def _peak_diagnostics(p, min_barrier=MIN_BARRIER_FOR_BIMODAL, min_mass_fraction=MIN_PEAK_MASS_FRACTION):
     """Two-peak diagnostics for one P_beta(S) array, or None if either
-    no two-peak structure exists or the dip between the two tallest
-    local maxima is too shallow to be anything but noise riding on a
-    single broad hump (see MIN_BARRIER_FOR_BIMODAL's docstring note
-    above and the N=30/eps=0.5 pilot's reanalysis: a naive peak finder
-    with no depth check located "double peaks" at 29/800 scanned betas
-    with barriers up to only 0.068 -- a <7% dip, not a first-order
-    signature -- entirely inside what was really one broad hump
-    riding on an under-converged ln_g).
+    no two-peak structure exists, one of the two candidate peaks is
+    negligible compared to the distribution's mode (see
+    MIN_PEAK_MASS_FRACTION's docstring note above), or the dip between
+    the two tallest local maxima is too shallow to be anything but
+    noise riding on a single broad hump (see MIN_BARRIER_FOR_BIMODAL's
+    docstring note above and the N=30/eps=0.5 pilot's reanalysis: a
+    naive peak finder with no depth check located "double peaks" at
+    29/800 scanned betas with barriers up to only 0.068 -- a <7% dip,
+    not a first-order signature -- entirely inside what was really one
+    broad hump riding on an under-converged ln_g).
     """
     peaks = _find_two_peaks(p)
     if peaks is None:
         return None
     i1, i2 = peaks
+    p_max = float(np.max(p)) if p.size else 0.0
+    if p_max <= 0 or p[i1] < min_mass_fraction * p_max or p[i2] < min_mass_fraction * p_max:
+        return None
     valley = i1 + int(np.argmin(p[i1:i2 + 1]))
     valley_val = float(p[valley])
     peak_val = float(0.5 * (p[i1] + p[i2]))

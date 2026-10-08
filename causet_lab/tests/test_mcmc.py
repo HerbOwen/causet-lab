@@ -15,6 +15,7 @@ from causet_lab.mcmc.action import (
 )
 from causet_lab.mcmc.sampler import run_chain, run_chain_fast, integrated_autocorr_time
 from causet_lab.mcmc.fast_core import build_state, apply_swap_py, apply_swap_jit, action_from_counts
+from causet_lab.mcmc.muca import _peak_diagnostics, MIN_BARRIER_FOR_BIMODAL, MIN_PEAK_MASS_FRACTION
 
 
 def test_2d_order_is_acyclic_and_closed():
@@ -185,3 +186,50 @@ def test_run_chain_fast_final_C_is_acyclic_and_closed():
     cset = CausalSet(res.final_C)
     assert cset.is_acyclic()
     assert cset.is_transitively_closed()
+
+
+# ---- _peak_diagnostics: deep-tail spurious "double peak" regression ----
+# Found during the Phase 5 random-background analysis
+# (results/phase5/random_background_report.md): a naive two-peak check
+# flagged a large barrier (17-21) at 4/5 realizations purely because a
+# local maximum 8-11 orders of magnitude below the real mode, sitting
+# deep in an exponentially suppressed tail, was treated as a "peak" on
+# equal footing with the real one. MIN_PEAK_MASS_FRACTION guards against
+# exactly this; these tests pin that behavior down.
+
+def test_peak_diagnostics_rejects_deep_tail_noise_bump():
+    p = np.zeros(120)
+    p[29] = 4e-10  # a floating-point-level wiggle in the deep tail, not a real peak
+    p[60:75] = np.exp(-0.02 * (np.arange(60, 75) - 67) ** 2) * 0.037  # the real, single broad hump
+    assert _peak_diagnostics(p) is None, "a tail bump far below the mode must not register as a second peak"
+
+
+def _two_gaussian_bumps(n_bins, c1, c2, amp1, amp2, floor):
+    """A smooth two-bump curve with a strictly positive floor everywhere
+    (no exact zeros), so the valley between the bumps is a real, finite
+    value rather than an artifact of an untouched-zero region."""
+    x = np.arange(n_bins)
+    return floor + amp1 * np.exp(-0.05 * (x - c1) ** 2) + amp2 * np.exp(-0.05 * (x - c2) ** 2)
+
+
+def test_peak_diagnostics_still_finds_a_genuine_double_peak():
+    p = _two_gaussian_bumps(120, c1=27, c2=87, amp1=0.03, amp2=0.03, floor=1e-8)
+    diag = _peak_diagnostics(p)
+    assert diag is not None, "two comparably-tall peaks with a real valley must still be detected"
+    assert diag["barrier"] >= MIN_BARRIER_FOR_BIMODAL
+    assert sorted(diag["peaks"]) == [27, 87]
+
+
+def test_peak_diagnostics_mass_fraction_boundary():
+    mode_amp = 0.037
+    # Just below the mass-fraction floor: still rejected.
+    p = _two_gaussian_bumps(120, c1=29, c2=67, amp1=0.5 * MIN_PEAK_MASS_FRACTION * mode_amp,
+                             amp2=mode_amp, floor=1e-10)
+    assert _peak_diagnostics(p) is None
+    # Comfortably above it, with a real valley: now a legitimate candidate
+    # (may or may not clear the barrier threshold, but must not be thrown
+    # out by the mass filter alone).
+    p = _two_gaussian_bumps(120, c1=29, c2=67, amp1=5.0 * MIN_PEAK_MASS_FRACTION * mode_amp,
+                             amp2=mode_amp, floor=1e-10)
+    diag = _peak_diagnostics(p)
+    assert diag is not None

@@ -353,6 +353,35 @@ def plot_vs_beta(
     return outfile
 
 
+def plot_P_beta_S(
+    cases: dict,
+    outfile: str,
+    title: str = "P_beta_c(S): reweighted action distribution at the located transition",
+) -> str:
+    """One P(S) curve per case (e.g. one per N), each at its own located
+    beta_c -- the double-peak (or lack thereof) is the first-order
+    transition signature from multicanonical reweighting (Berg &
+    Neuhaus 1991); peaks drawing further apart and the valley between
+    them deepening as N grows is the expected sharpening behavior.
+
+    cases: {label: {"S": array, "P": array}}
+    """
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    for i, (label, d) in enumerate(cases.items()):
+        color = _color_for(i)
+        S = np.asarray(d["S"], dtype=float)
+        P = np.asarray(d["P"], dtype=float)
+        ax.plot(S, P, marker="", linestyle="-", color=color, label=label, linewidth=1.3)
+    ax.set_xlabel("S")
+    ax.set_ylabel("P(S)")
+    ax.set_title(title)
+    ax.legend(fontsize=8, loc="best")
+    fig.tight_layout()
+    fig.savefig(outfile, dpi=150)
+    plt.close(fig)
+    return outfile
+
+
 def plot_distance_vs_x(
     points: list,
     outfile: str,

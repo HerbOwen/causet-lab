@@ -375,6 +375,21 @@ def build_parser() -> argparse.ArgumentParser:
     p_mcmc.add_argument("--seeds", type=int, nargs="+", default=None,
                          help="override the production seed list (default 0 1 2)")
 
+    p_muca = sub.add_parser(
+        "muca-calibration",
+        help="Phase 3b: Wang-Landau + multicanonical (MUCA) sampling over the bitset-based "
+             "incremental action engine, replacing the beta-by-beta PT scan; write "
+             "results/phase3b/muca_calibration_report.md.",
+    )
+    p_muca.add_argument("--N", type=int, nargs="+", default=[30, 40, 50, 60],
+                         help="N grid (default 30 40 50 60)")
+    p_muca.add_argument("--eps", type=float, nargs="+", default=[0.5, 0.21],
+                         help="eps grid, in run order (default 0.5 0.21 -- 0.5 first per the request)")
+    p_muca.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2],
+                         help="seed list for the beta_c uncertainty estimate (default 0 1 2)")
+    p_muca.add_argument("--checkpoint-dir", type=str, default=None,
+                         help="directory for WL/MUCA checkpoints (resumes automatically if present)")
+
     return parser
 
 
@@ -402,6 +417,14 @@ def main(argv=None) -> None:
     elif args.command == "mcmc-study":
         from .mcmc import study as mcmc_study
         mcmc_study.run_mcmc_study(study_ns=args.N, eps_values=args.eps, seeds=args.seeds)
+    elif args.command == "muca-calibration":
+        from .mcmc import muca
+        summaries = muca.run_phase3b_calibration(
+            study_ns=args.N, eps_values=args.eps, seeds=args.seeds, checkpoint_dir=args.checkpoint_dir,
+        )
+        muca.generate_phase3b_plots(summaries, args.N, args.eps)
+        side_note_eps = 0.21 if 0.21 in args.eps else None
+        muca.write_phase3b_report(summaries, args.N, args.eps, side_note_eps=side_note_eps, side_note_betas=[7.0])
 
 
 if __name__ == "__main__":

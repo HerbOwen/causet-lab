@@ -423,7 +423,7 @@ def run_muca_production(wl_result, target_round_trips=10, max_moves=None,
 
 def run_muca_recursion(wl_result, target_round_trips=3, max_iters=10, short_max_moves=None,
                         checkpoint_path=None, max_step=2.0, smooth_window=3,
-                        verbose=True, verbose_label=None):
+                        production_fn=None, verbose=True, verbose_label=None):
     """Multicanonical recursion: alternate short frozen-weight
     production runs with a weight update from the run's own histogram
     (refine_ln_g_production), stopping as soon as one short run
@@ -453,15 +453,26 @@ def run_muca_recursion(wl_result, target_round_trips=3, max_iters=10, short_max_
     state and round-trip progress instead of starting fresh against
     the newly refined weights. checkpoint_path here instead saves a
     snapshot (via save_checkpoint directly) only after the whole
-    recursion converges, for crash recovery between pilot stages.
+    recursion converges, for crash recovery between pilot stages --
+    only supported for the default production_fn (make_muca_state
+    assumes (u, v); pass checkpoint_path=None here for any other
+    model and let production_fn do its own checkpointing internally).
+
+    production_fn: defaults to run_muca_production (the 2D-orders
+    model); pass a different production function with the same
+    call signature (e.g. lattice_gas.run_muca_production_lattice) to
+    reuse this exact recursion strategy for a different underlying
+    move/state representation -- this function only ever touches
+    ln_g/H_muca/round_trips/moves_done/bin_idx/rng_state generically.
     """
+    production_fn = production_fn or run_muca_production
     label = verbose_label or f"N={wl_result['N']} eps={wl_result['eps']}"
     ln_g = wl_result["ln_g"]
     state = dict(wl_result)
     history = []
     for it in range(max_iters):
         t0 = time.time()
-        prod = run_muca_production(
+        prod = production_fn(
             {**state, "ln_g": ln_g}, target_round_trips=target_round_trips, max_moves=short_max_moves,
             checkpoint_path=None, verbose=verbose, verbose_label=f"{label} recursion-iter{it}",
         )
@@ -481,21 +492,25 @@ def run_muca_recursion(wl_result, target_round_trips=3, max_iters=10, short_max_
             return {"ln_g": ln_g, "prod": prod, "iterations": it + 1, "history": history, "converged": True}
         ln_g = refine_ln_g_production(ln_g, prod["H_muca"], wl_result["ever_visited"],
                                        max_step=max_step, smooth_window=smooth_window)
-        state = {**state, "u": prod["u"], "v": prod["v"], "future": prod["future"], "past": prod["past"],
-                  "counts": prod["counts"], "rng_state": prod["rng_state"], "bin_idx": prod["bin_idx"]}
+        # Merge all of prod's fields into state generically (whatever
+        # the walker-state representation is -- (u,v) or (L), etc.)
+        # rather than naming specific keys, so this loop works
+        # unchanged for any production_fn's state shape.
+        state = {**state, **prod}
     return {"ln_g": ln_g, "prod": prod, "iterations": max_iters, "history": history, "converged": False}
 
 
 def _parallel_production_worker(args):
-    state, seed, target_round_trips, max_moves, round_trip_window = args
+    state, seed, target_round_trips, max_moves, round_trip_window, production_fn = args
+    production_fn = production_fn or run_muca_production
     state = {**state, "rng_state": rng.seed_state(seed)}
-    return run_muca_production(state, target_round_trips=target_round_trips, max_moves=max_moves,
-                                round_trip_window=round_trip_window, verbose=False)
+    return production_fn(state, target_round_trips=target_round_trips, max_moves=max_moves,
+                          round_trip_window=round_trip_window, verbose=False)
 
 
 def run_muca_production_parallel(state, target_round_trips_total=30, n_workers=None,
                                   max_moves_per_worker=None, seed_base=1000, round_trip_window=None,
-                                  verbose=True, verbose_label=None):
+                                  production_fn=None, verbose=True, verbose_label=None):
     """Several independent frozen-weight MUCA production chains in
     parallel (default: one per CPU core), each reseeded from the same
     starting configuration/weights but with an independent RNG stream,
@@ -522,7 +537,7 @@ def run_muca_production_parallel(state, target_round_trips_total=30, n_workers=N
     n_workers = n_workers or os.cpu_count() or 1
     target_per_worker = max(1, -(-target_round_trips_total // n_workers))
     label = verbose_label or f"N={state['N']} eps={state['eps']}"
-    tasks = [(state, seed_base + i, target_per_worker, max_moves_per_worker, round_trip_window)
+    tasks = [(state, seed_base + i, target_per_worker, max_moves_per_worker, round_trip_window, production_fn)
              for i in range(n_workers)]
     t0 = time.time()
     with ProcessPoolExecutor(max_workers=n_workers) as ex:

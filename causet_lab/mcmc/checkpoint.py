@@ -111,3 +111,44 @@ def make_lattice_muca_state(L, future, past, counts, rng_state, ln_g, H, bin_lo,
         "rec_height": list(rec_height_list), "rec_of": list(rec_of_list),
         "rec_struct_bin": list(rec_struct_bin_list) if rec_struct_bin_list is not None else [],
     }
+
+
+def make_randombg_wl_state(L, site_t, site_x, future, past, counts, rng_state, ln_g, H, bin_lo, bin_width,
+                            n_bins, f_mod, stage, bin_idx, extreme_state, half_trips, edge_hits_total,
+                            ever_visited=None, full_coverage_required=True) -> dict:
+    """Phase 5 random-background twin of make_lattice_wl_state -- adds
+    the fixed (quenched) background position arrays, which must be
+    checkpointed too: resuming with a freshly re-sprinkled background
+    would silently change the model being sampled."""
+    return {
+        "kind": "randombg_wl",
+        "L": np.asarray(L), "site_t": np.asarray(site_t), "site_x": np.asarray(site_x),
+        "future": np.asarray(future), "past": np.asarray(past), "counts": np.asarray(counts),
+        "rng_state": np.uint64(rng_state),
+        "ln_g": np.asarray(ln_g), "H": np.asarray(H),
+        "bin_lo": float(bin_lo), "bin_width": float(bin_width), "n_bins": int(n_bins),
+        "f_mod": float(f_mod), "stage": int(stage),
+        "bin_idx": int(bin_idx), "extreme_state": np.asarray(extreme_state),
+        "half_trips": np.asarray(half_trips), "edge_hits_total": int(edge_hits_total),
+        "ever_visited": np.asarray(ever_visited) if ever_visited is not None else (np.asarray(H) > 0),
+        "full_coverage_required": bool(full_coverage_required),
+    }
+
+
+def make_randombg_muca_state(L, site_t, site_x, future, past, counts, rng_state, ln_g, H, bin_lo, bin_width,
+                              n_bins, bin_idx, half_trips, moves_done,
+                              rec_bins_list, rec_S_list, rec_height_list, rec_of_list,
+                              rec_struct_bin_list=None) -> dict:
+    """Phase 5 random-background twin of make_lattice_muca_state."""
+    return {
+        "kind": "randombg_muca",
+        "L": np.asarray(L), "site_t": np.asarray(site_t), "site_x": np.asarray(site_x),
+        "future": np.asarray(future), "past": np.asarray(past), "counts": np.asarray(counts),
+        "rng_state": np.uint64(rng_state),
+        "ln_g": np.asarray(ln_g), "H": np.asarray(H),
+        "bin_lo": float(bin_lo), "bin_width": float(bin_width), "n_bins": int(n_bins),
+        "bin_idx": int(bin_idx), "half_trips": np.asarray(half_trips), "moves_done": int(moves_done),
+        "rec_bins": list(rec_bins_list), "rec_S": list(rec_S_list),
+        "rec_height": list(rec_height_list), "rec_of": list(rec_of_list),
+        "rec_struct_bin": list(rec_struct_bin_list) if rec_struct_bin_list is not None else [],
+    }

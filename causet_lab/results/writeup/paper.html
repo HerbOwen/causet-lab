@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>An open-source multicanonical sampler for 2D causal set quantum gravity: validation and a random-background lattice-gas comparison</title>
+<style>
+@page { size: Letter; margin: 2cm 2.2cm; }
+body { font-family: Georgia, "Times New Roman", serif; font-size: 10.6pt;
+       line-height: 1.45; color: #1a1a1a; max-width: 100%; }
+h1, h2, h3 { font-family: Helvetica, Arial, sans-serif; color: #10243e; }
+h2 { border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 1.6em; }
+h3 { margin-top: 1.2em; }
+code { font-family: "Consolas", monospace; font-size: 0.92em; background: #f4f4f4;
+        padding: 1px 4px; border-radius: 3px; }
+pre code { display: block; padding: 8px; overflow-x: auto; }
+blockquote { border-left: 3px solid #aaa; margin-left: 0; padding-left: 1em; color: #444; font-size: 0.95em; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.92em; }
+th, td { border: 1px solid #bbb; padding: 4px 7px; text-align: left; }
+th { background: #eef2f7; }
+hr { border: none; border-top: 1px solid #ccc; margin: 2em 0; }
+ul, ol { margin-top: 0.3em; }
+.titleblock { text-align: center; margin-bottom: 0.4em; }
+.status { text-align: center; color: #666; font-size: 0.9em; margin-bottom: 2em; }
+</style>
+</head>
+<body>
+<div class="titleblock"><h1>An open-source multicanonical sampler for 2D causal set quantum gravity: validation and a random-background lattice-gas comparison</h1></div>
+<div class="status">Independent project report, v1 (2026-10-09) &mdash; not peer reviewed</div>
+<blockquote>
+<p><strong>How to read the citations in this paper.</strong> Every numeric claim below
+is tagged <code>[source @ commit]</code>, naming the exact report file and git
+commit hash in this repository the number was taken from, so any
+number here can be traced back to the exact code and data that
+produced it. Paper citations use only works this project actually
+fetched and checked against its own code, listed in full at first use
+and collected in the References section at the end; no arXiv ID is
+invented for a source that doesn't have one on record here.</p>
+</blockquote>
+<h2>Abstract</h2>
+<p>We describe an open-source Wang-Landau/multicanonical (WL/MUCA) sampler
+for two-dimensional causal set quantum gravity, built to replace a
+beta-by-beta parallel-tempering (PT) scan whose located critical
+couplings turned out to be mostly right-censored and, in one tested
+case, not reproducible under a blind re-centering of the search grid.
+The sampler is validated against the published finite-size-scaling
+formula for the order-based smeared Benincasa-Dowker action at two
+system sizes and two couplings, and against an independent causal-set
+model -- Cunningham &amp; Surya's dimensionally-restricted lattice gas --
+including that model's own qualitative manifold-like/layered phase
+structure. We then build a random-background variant of the lattice
+gas (a quenched Poisson sprinkling of background sites in place of
+C&amp;S's regular lattice) to address an open question C&amp;S raise but do
+not pursue: whether their regular background biases the result. At
+n=30, five independent background realizations locate a critical
+coupling about 12% below a matched-pipeline, 5-chain-seed regular-
+lattice ensemble (z=51.8 -- not a single-seed artifact on either
+side), while the qualitative phase structure and the hot phase's
+detailed statistics are close to background-independent. A direct
+mechanism check rules out the simplest explanation (the random
+background reaching a deeper cold-phase action floor); the real
+mechanism is left as an open question. At n=50, the gap survives
+(z=13.7) but shrinks to about 7%, driven mainly by the absolute gap
+itself falling about 3x (1.372 -&gt; 0.460), and the cold-phase observable
+difference most visible at n=30 nearly closes. The relative gap times
+n is nearly constant across the two sizes (12.4%x30=371 vs.
+7.2%x50=358), consistent with -- but, from two points, not proof of --
+a finite-size effect falling off roughly as 1/n; taken at face value
+this predicts about a 5.6% relative gap at n=64, the next size
+reachable without a bitset-engine rewrite. Getting a trustworthy n=50
+result required finding and fixing two
+further sampler bugs invisible at n=30: an adaptive-histogram-widening
+step that filled new bins with a flat value instead of a gradient
+(creating an unphysical "cliff" the walker could get trapped behind),
+and -- after fixing that -- a genuine kinetically-isolated bin that no
+amount of reweighting could repair, fixed by switching to a fixed,
+pilot-quantile-based sampling window with no adaptive widening at all.
+We report several methodological pitfalls found and fixed along the
+way -- a beta_c definition mismatch, noise mistaken for a first-order
+double peak (twice, in two different ways), a units bug in the
+random-background model's causal relation, and the two Wang-Landau
+histogram-widening bugs above -- as cautionary detail for others
+building similar samplers.
+Limitations include small system sizes (N, n &lt;= 60), a first-order
+barrier that is not cleanly resolved at any size tested, and only two
+system sizes checked for the background-dependence finding.</p>
+<h2>1. Introduction</h2>
+<p>A causal set is a locally finite partially ordered set, proposed as a
+discrete substrate for Lorentzian quantum gravity: the partial order
+encodes the causal structure, and continuum geometry is meant to
+emerge statistically from a sum (or path integral) over causal sets
+weighted by a discrete analogue of the Einstein-Hilbert action. The
+leading discrete action for this purpose is the Benincasa-Dowker (BD)
+action, built from counts of small order-intervals ("abundances") in
+the causal set, which converges to the continuum scalar-curvature
+action when evaluated on a Poisson sprinkling into a Lorentzian
+manifold [Benincasa &amp; Dowker 2010, arXiv:1001.2725]. Because exact
+abundance counts are UV-sensitive (dominated by nearest-neighbor
+relations), the action used in practice is <em>smeared</em> over a small
+length scale eps, which also fixes the overall normalization used
+throughout this project.</p>
+<p>Monte Carlo studies that weight the space of N-element causal sets by
+exp(-beta * S_BD(eps)) -- a Euclideanized, not oscillatory, weight --
+have found a phase transition as beta is varied: a continuum-like
+("manifold-like") phase at small beta whose statistics resemble a
+genuine Lorentzian sprinkling, and a non-continuum phase at large beta
+dominated by highly-ordered configurations (Kleitman-Rothschild-like
+orders, or -- in lattice-gas-type models -- literal crystalline
+layering) [Surya 2012, arXiv:1110.6244]. Locating this transition
+reliably, and determining its order, is numerically hard: the two
+phases are separated by a free-energy barrier that single-site
+Metropolis moves and even naive replica exchange struggle to cross,
+so a transition can look "located" while actually being an artifact of
+wherever the sampler's convergence ran out. Section 6 below documents
+several concrete ways this went wrong during this project before it
+was caught.</p>
+<p>Cunningham &amp; Surya introduce a cheaper alternative to sampling generic
+N-element orders directly: a <em>lattice gas</em>, where N causal-set elements
+occupy N of the sites of a fixed regular lattice embedded in a
+d-dimensional cylinder spacetime, and Monte Carlo moves relocate one
+element to an unoccupied site [Cunningham &amp; Surya 2019, arXiv:1908.11647].
+This "dimensionally restricted" construction reproduces the generic
+model's qualitative manifold-like/layered phase transition at much
+lower computational cost, but the background lattice is regular --
+C&amp;S note explicitly that checking whether this regularity biases the
+causal structure (as opposed to using "a more realistic model of
+discreteness", i.e. a randomly sprinkled background) is an open
+question they do not pursue. Section 5 below is this project's own
+attempt at that comparison.</p>
+<h2>2. Models</h2>
+<p><strong>2D orders with the smeared BD action.</strong> The state space is all
+labelled partial orders on N elements (equivalently, N x N transitive
+binary matrices); two elements' relation is updated by a single
+coordinate-swap Monte Carlo move. The smeared 2D action is
+<code>S(C,eps) = 4*eps*(N - 2*eps*sum_n N_n*f(n,eps))</code>,
+<code>f(n,eps) = (1-eps)^n*(1 - 2*eps*n/(1-eps) + eps^2*n*(n-1)/(2*(1-eps)^2))</code>,
+matched by direct inspection of the fetched paper against this
+project's implementation, including an eps -&gt; 1 analytic-limit unit
+test [Glaser, O'Connor &amp; Surya 2018, arXiv:1706.06432; confirmed in
+<code>causet_lab/mcmc/action.py</code> and <code>results/phase3/mcmc_2d_report.md @ edb9b99</code>].</p>
+<p><strong>Dimensionally-restricted lattice gas.</strong> N elements occupy N sites of
+an <code>h*w = m</code> regular lattice on a cylinder (metric
+<code>ds^2 = -dt^2 + dtheta^2</code>, t in {0,...,h}, theta periodic with period w
+sites), with this project's own d=2 sizing convention <code>w=n, h=4n,
+m=4n^2</code> matched directly against C&amp;S's own quoted numbers. Moves swap
+one occupied site with one unoccupied site. <strong>C&amp;S's causal relation is
+not fully specified in the paper</strong> -- they state 45-degree lightcones
+and confirm cylinder wraparound exists, but give no integer-coordinate
+formula; this project derived <code>(t_a,k_a) prec (t_b,k_b) iff t_b&gt;t_a and
+min(dk, w-dk) &lt;= t_b-t_a</code> (shortest arc on the circumference) and
+flags this explicitly as its own construction, not a quote
+[<code>causet_lab/mcmc/lattice_gas_core.py</code>, <code>results/phase4/lattice_gas_2d_report.md
+@ 0f85d22</code>]. The smeared action used is C&amp;S's own Eq. 8/9, which has a
+genuinely different normalization from the order model's action above
+(prefactor <code>2*eps</code> vs <code>4*eps</code>, and the interval-count sum starts at
+r=1 vs r=0) -- confirmed by direct quotation from both papers, kept as
+two separate functions rather than unified.</p>
+<p><strong>Random-background variant (this project's own construction).</strong>
+Identical region, filling representation, move set, and action; the
+only change is that the m background sites are a fixed (quenched)
+uniform-random sprinkling of continuous <code>(t, x)</code> positions instead of
+sitting on the integer lattice, with <code>x</code> given period <code>w</code> -- the
+<em>same</em> units the lattice's own causal relation uses, not radians
+(<code>theta</code> has period <code>2*pi</code>; <code>x = w*theta/(2*pi)</code> is the right
+rescaling to keep the two models' causal geometries identical. See
+Section 6 for how a units mismatch here was initially missed).
+<strong>Equivalence check</strong>: placing the background exactly at the regular
+lattice's own integer positions reproduces <code>lattice_gas.lattice_to_matrix</code>
+bit-for-bit, including the lightlike (<code>&lt;=</code>) convention, across 3 sizes
+and 5 seeds each [<code>causet_lab/tests/test_random_bg.py::test_random_bg_at_lattice_positions_matches_lattice_exactly</code>
+@ 1ff7ef3; all 3 parametrizations pass].</p>
+<h2>3. Methods</h2>
+<p><strong>Incremental bitset updates.</strong> Each element's relation to every other
+is tracked as a <code>uint64</code> bitset (<code>future[x]</code>/<code>past[x]</code>); interval size
+for a related pair is <code>popcount(future[x] &amp; past[y])</code>. A move changes
+only the relations of the element(s) that moved, updated via O(N)
+scalar bookkeeping rather than an O(N^2) matrix rebuild -- validated
+bit-for-bit against full recomputation over 1e5 random moves for every
+model in this project (orders, lattice gas, random background)
+[<code>causet_lab/tests/test_bitset_core.py</code>, <code>test_lattice_gas.py</code>,
+<code>test_random_bg.py</code>]. This caps all three models at N &lt;= 64 (one
+element's relations fit in one machine word); see Section 7.</p>
+<p><strong>Parallel tempering (PT).</strong> The original (Phase 3) approach: replicas
+at a ladder of beta values, with swap moves between neighbors and
+round-trip tracking to confirm replicas actually cross the transition
+rather than merely reporting a locally-plausible swap rate
+[<code>causet_lab/mcmc/tempering.py</code>]. The method traces to exchange Monte
+Carlo / replica exchange [Swendsen &amp; Wang, Phys. Rev. Lett. 57, 2607
+(1986)]; this project implemented it from the general replica-exchange
+description rather than fetching and checking a specific paper's
+equations against the code (unlike the citations marked <code>@ commit</code>
+elsewhere in this paper), so it is cited by name only, without that
+same code-level verification.</p>
+<p><strong>Wang-Landau + multicanonical (WL/MUCA).</strong> Replacing PT (see Section
+6 for why): Wang-Landau [Wang &amp; Landau, Phys. Rev. Lett. 86, 2050
+(2001)] estimates the action density of states g(S) by
+an adaptive-weight random walk that flattens the visited-bin histogram
+across the whole reachable range (stage-doubling modification factor,
+with stall detection distinguishing a genuinely unreachable bin from a
+merely slow one); multicanonical production then samples with that
+weight frozen and reweights the single resulting run to the canonical
+P_beta(S) and <O>(beta) at <em>any</em> beta, using the Berg-Neuhaus
+histogram-corrected estimator <code>P(S) ~ H_muca(S) * exp(ln_g(S) -
+beta*S)</code> [Berg &amp; Neuhaus, "Multicanonical algorithms for first order
+phase transitions", Phys. Lett. B 267 (1991) 249 -- no arXiv ID on
+record for this pre-arXiv-era reference]. beta_c is located as the
+action-variance (specific-heat) maximum, matching the definition
+Glaser-O'Connor-Surya themselves use, not an equal-peak-height
+double-peak criterion (kept as a separate diagnostic) [Glaser,
+O'Connor &amp; Surya 2018, Sec. 4.1].</p>
+<p><strong>Windowed round-trip counting.</strong> A round trip is counted between the
+two <em>physically relevant</em> reachable extremes, which can be narrower
+than the full <code>ever_visited</code> span when most of P_beta(S)'s mass for
+the beta range of interest sits well inside it (Section 6).</p>
+<p><strong>Checkpointing.</strong> Atomic pickle writes of the full walker state
+(configuration, splitmix64 RNG state, WL/MUCA weights and histograms),
+exercised in practice by intentionally interrupting and resuming runs
+[<code>causet_lab/mcmc/checkpoint.py</code>].</p>
+<p><strong>Uncertainty.</strong> Two independent estimators are used depending on what
+a given run produced: a block-bootstrap over round-trip-sized windows
+of a single run's time series (used for the N=30, eps=0.5 orders
+result), or the empirical spread across independent parallel workers'
+own located beta_c (used for N=40, eps=0.5 and, in Section 5, across
+background realizations).</p>
+<h2>4. Validation</h2>
+<p><strong>2D orders, eps=0.5, N=30 and N=40: beta_c vs. the published
+formula.</strong> The formula is <code>beta_c(N,eps) = b(eps)/N + c(eps)/N^2</code>,
+<code>b(eps)=1.66(+/-0.03)/eps^2</code>, <code>c(eps) = 4.09(+/-0.50)/eps^3 -
+27.77(+/-2.45)/eps^2</code> [Glaser, O'Connor &amp; Surya 2018]. The leading
+term alone is a poor approximation at these sizes -- the <code>1/N^2</code>
+correction is not a small perturbation here, consistent with the
+paper's own statement that its asymptotic regime is only reached for
+<code>N &gt;~ 65</code>:</p>
+<table>
+<thead>
+<tr>
+<th>N</th>
+<th>leading term <code>b/N</code></th>
+<th>full formula</th>
+<th>measured beta_c</th>
+<th>z</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>30</td>
+<td>0.2213</td>
+<td>0.1343 +/- 0.0158</td>
+<td>0.1478 +/- 0.0004 (bootstrap)</td>
+<td>0.86</td>
+</tr>
+<tr>
+<td>40</td>
+<td>0.1660</td>
+<td>0.1170 +/- 0.0096</td>
+<td>0.1221 +/- 0.0011 (4-worker spread)</td>
+<td>0.52</td>
+</tr>
+</tbody>
+</table>
+<p>[<code>results/phase3b/muca_calibration_report.md @ 7d648fa</code>; leading/full
+formula values recomputed directly from the published coefficients
+above for this table]. Both PASS (z &lt; 3), though see Section 7 for why
+this should not be read as confirming the paper's full first-order
+picture.</p>
+<p><strong>2D orders, eps=0.1, N=30: independent cross-check.</strong> Run fresh (not
+part of the original eps=0.5 calibration) as a side check during the
+lattice-gas work below: located beta_c = 6.939, full-formula
+prediction 6.992 +/- 0.627 (leading term alone: 5.533) -- within about
+0.1 formula-standard-deviations, with no bootstrap on the measured
+side for this single run [<code>results/phase4/lattice_gas_2d_report.md @
+0f85d22</code>, Part 5].</p>
+<p><strong>PT vs. MUCA agreement at N=30, eps=0.5.</strong> The original PT scan
+located beta_c = 0.14797 +/- 0.00384 at this (N, eps)
+[<code>results/phase3/mcmc_2d_report.md @ edb9b99</code>] -- <strong>but this specific
+value is flagged in that same report as right-censored</strong> (the largest
+converged beta in that scan, not a confirmed interior maximum; see
+Section 6). The independent WL/MUCA run above located 0.1478 +/- 0.0004
+using a method that locates an interior maximum directly rather than
+scanning outward from a fixed grid. The two agree to within 0.001
+[<code>results/phase3b/muca_calibration_report.md @ 7d648fa</code>]. This is read
+cautiously, as a number consistent with two different sampling methods
+rather than proof of a shared, confirmed beta_c: because the PT value
+was never independently confirmed interior in its own right, the
+agreement cannot rule out the two methods both landing near the same
+right-censoring edge by coincidence, however unlikely that may seem
+given how differently the two methods search the space.</p>
+<p><strong>Lattice gas 2D: controls and qualitative phase comparison.</strong> beta=0
+(uniformly random fillings) sampled as sub-intervals (since the
+cylinder filling is not itself an Alexandrov interval) give
+Myrheim-Meyer dimension 2.292 (n=30) / 2.073 (n=50), both close to the
+d=2 target, and interval-abundance L1 distance to a true sprinkle of
+0.100 / 0.086 [<code>results/phase4/lattice_gas_2d_report.md @ 0f85d22</code>].
+At n=30, the located beta_c = 11.118 separates a hot phase (ordering
+fraction 0.882, matching C&amp;S's own quoted hot-phase value of 0.88
+almost exactly; MM dimension 2.18; abundance-profile distance to a
+sprinkle 0.065) from a cold phase at 4*beta_c (ordering fraction
+0.646; MM dimension 2.87; abundance-profile distance 0.794) -- every
+observable moves in C&amp;S's reported direction, though the cold-phase
+ordering fraction does not reach their asymptotic ~0.5 bilayer value
+at this much smaller n [same source, Part 4].</p>
+<p><strong>P_beta_c(S), described cautiously.</strong> The pooled action histogram at
+the located beta_c is a single broad hump at both N=30 and N=40
+(eps=0.5), not a resolved double peak
+[<code>results/phase3b/muca_calibration_report.md @ 7d648fa</code>, plot
+<code>muca_P_beta_c_S_eps0p50.png</code>]. This is consistent with either a
+genuinely weak/crossover-like transition at these small N (both are
+well below the paper's own <code>N &gt;~ 65</code> asymptotic regime) or with
+insufficient statistics to resolve a real but small barrier --
+<strong>the data collected here cannot distinguish the two</strong>, and this
+should not be read as a confirmed first-order signature at either N.</p>
+<h2>5. New result: random vs. regular background</h2>
+<p>Stage 1: n=30, 5 independent background realizations (sprinkled once
+per realization, then held fixed -- "quenched" -- for that
+realization's entire WL+MUCA run), run in parallel across 4 CPU
+cores, total wall time 1623.9s. The background seed and the
+Metropolis-chain seed are always independent parameters for a given
+realization (never derived from one another), so the only thing
+varying across the 5 runs is the background geometry itself. Same
+eps=0.1, same m = 4*n^2, same WL/MUCA/checkpointing pipeline as the
+Phase 4 regular-lattice run, with the beta_c-location scan bracket
+deliberately widened (0.01x to 30x the regular lattice's own located
+beta_c, used only as a pilot-range anchor, not an assumption the two
+models share a beta_c) since there is no a priori reason quenched
+disorder should leave beta_c unchanged
+[<code>results/phase5/random_background_report.md @ 3ae1ad5</code>, this section].</p>
+<p><strong>Equivalence check</strong>: placing the background exactly at the regular
+lattice's integer positions reproduces <code>lattice_to_matrix</code> bit-for-bit
+across 3 sizes and 5 seeds each -- confirms the random background's
+causal geometry is identical to the regular lattice's at those
+positions, not merely "the same region" (see Section 6 for the units
+bug this caught).</p>
+<p><strong>Control</strong>: beta=0 random-background fillings (5 seeds, same
+sub-interval-sampling methodology as Phase 4) give MM dimension 2.267
+(n=30) / 2.061 (n=50), abundance-profile distance to a sprinkle 0.089
+/ 0.060, and whole-filling ordering fraction 0.8768 / 0.8766 --
+matching the regular lattice's own n=30 beta=0 values (MM dim 2.292,
+distance 0.100, ordering fraction ~0.882) at least as well.</p>
+<p><strong>beta_c</strong>: tightly reproducible across realizations (9.709, 9.757,
+9.756, 9.766, 9.627; mean 9.723, std 0.058, SEM 0.026). Checked against
+a matched-pipeline comparison, not a single-seed one: the regular
+lattice re-run through the identical <code>random_bg</code> code path (positions
+fixed at the integer grid, otherwise the exact same settings) at 5
+independent chain seeds gives 11.095 +/- 0.005 (SEM, std 0.011) --
+consistent with Phase 4's original single-seed value (11.118) to
+within about 2 std. Gap = 1.372, combined SEM = 0.0265, <strong>z = 51.8</strong>:
+<strong>significantly below</strong> the regular lattice, not explainable by
+single-seed noise on either side. An unexpected side finding from the
+matched-pipeline rerun: the regular lattice mixed markedly worse under
+Wang-Landau than every random-background realization (total wall time
+6659.9s for 5 chain seeds vs. 1623.9s for 5 backgrounds) -- plausibly
+the lattice's exact periodic structure supports slow modes that
+quenched disorder breaks up, not independently confirmed.</p>
+<p><strong>Mechanism check</strong>: does the random background simply reach a deeper
+cold-phase action floor (which would mechanically lower beta_c)? Checked
+directly against both backgrounds' actual WL/MUCA data: lowest action
+reached (-2.4716 +/- 0.0013 regular vs. -2.4723 +/- 0.0008 random) and
+hot-phase mean action (4.3632 +/- 0.0004 vs. 4.3597 +/- 0.0081) are
+statistically indistinguishable between the two. <strong>The hypothesis does
+not hold</strong> -- the beta_c shift is not explained by the random
+background being able to get more deeply ordered; the real mechanism
+(presumably a difference in the density-of-states shape across the
+explored range, not its extremes) is left open.</p>
+<p><strong>Hot- vs. cold-phase observables</strong> (hot: 5 fresh beta=0 fillings per
+background; cold: 5 independent chains per background annealed to
+<code>4 * that background's own beta_c</code>; values are mean +/- std across the
+5 backgrounds):</p>
+<table>
+<thead>
+<tr>
+<th>Observable</th>
+<th>Hot</th>
+<th>Cold</th>
+<th>Reg. lattice, hot</th>
+<th>Reg. lattice, cold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MM dimension</td>
+<td>2.163 +/- 0.145</td>
+<td>2.729 +/- 1.041</td>
+<td>2.18</td>
+<td>2.87</td>
+</tr>
+<tr>
+<td>Ordering fraction</td>
+<td>0.876 +/- 0.007</td>
+<td>0.583 +/- 0.022</td>
+<td>0.882</td>
+<td>0.646</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>7.00 +/- 0.51</td>
+<td>3.44 +/- 0.36</td>
+<td>7.40</td>
+<td>4.20</td>
+</tr>
+<tr>
+<td>Occupied rows (/120)</td>
+<td>26.32 +/- 0.41</td>
+<td>13.16 +/- 0.61</td>
+<td>26.7</td>
+<td>12.8</td>
+</tr>
+</tbody>
+</table>
+<p>The hot phase is close to background-independent (every value within
+about 1 std of the regular lattice's). The cold phase differs
+measurably: lower ordering fraction and height on the random
+background than the regular lattice at a comparably-deep point
+relative to each model's own beta_c (not a matched absolute beta, by
+construction) -- in the direction of C&amp;S's own asymptotic bilayer
+limit (~0.5), slightly closer here than the regular lattice got at
+n=30.</p>
+<p><strong>P_beta_c(S) shape</strong>: a naive check using this project's existing
+peak-finder flagged a "double peak" with a large barrier (17-21) at
+4/5 realizations -- <strong>confirmed spurious</strong> on inspection (one
+candidate "peak" in every case was 8-11 orders of magnitude below the
+real mode, see Section 6), and <strong>fixed upstream</strong> in
+<code>muca._peak_diagnostics</code> itself (a new mass-fraction filter, with
+regression tests) rather than left as a local workaround. After the
+fix, all 5 realizations show a single broad hump, the same picture as
+the regular lattice and the orders model. Re-checking Phase 3b's and
+Phase 4's committed conclusions against their actual saved checkpoints
+confirms the fix changes neither (both still single-hump) -- though it
+does retroactively show that Phase 4's lattice-gas P_beta_c(S) would
+have triggered the <em>same</em> spurious double peak had anyone checked it
+at the time; nobody had. <strong>No confirmed first-order signature at any
+realization or model examined in this project.</strong></p>
+<p><strong>Plain answer (n=30)</strong>: the transition's <em>location</em> depends on the
+background being a regular grid (a real ~12% shift, confirmed against
+a matched 5-seed regular-lattice ensemble, not a single-seed artifact,
+and not explained by the simplest mechanism checked, well outside the
+cross-realization spread); the transition's <em>qualitative character</em>
+does not (manifold-like/ordered phases persist on both, the hot phase
+is quantitatively close to background-independent, neither background
+shows a resolved double peak). Reported as found, not rounded toward
+either "no effect" or "a different transition."</p>
+<p><strong>Stage 2: n=50.</strong> Getting a trustworthy result here took longer than
+expected -- two further sampler bugs, both general lessons for this
+WL pipeline, are reported in full in Section 6. In brief: (1) the
+histogram-widening step filled new bins with a flat repeated value
+instead of a gradient, which could open an unphysical <code>ln_g</code> cliff at
+the far edge of a widened block under ordinary differential
+visitation (found directly: three of the first ten n=50 runs produced
+adjacent-bin <code>ln_g</code> steps of 101-66,767, vs. 6-11 for every healthy
+run, each leaving its MUCA production stuck at zero round trips after
+300,000,000 moves); (2) after fixing that, one seed hit the <em>same</em>
+failure signature again, from a genuinely kinetically-isolated bin --
+entropically ordinary, but reachable by almost no accepted
+single-site move from the bulk -- which no amount of smarter <code>ln_g</code>
+seeding can fix, since the problem is reachability, not weight. Fixed
+by replacing adaptive widening with a <em>fixed</em> sampling window set from
+pilot quantiles (hot end: 99.99th percentile of a beta=0 sample; cold
+end: 0.01st percentile of a sample annealed to 3.5x the beta_c
+anchor), verified post-hoc to carry negligible reweighted probability
+mass (&lt;1e-3, typically &lt;1e-4) at either edge for beta in [0, 2*beta_c]
+on every production run.</p>
+<p>With that fixed (and a direct two-seed check confirming the
+methodology change does not alter beta_c for seeds that were already
+clean -- differences of 0.002 and 0.008, well inside each ensemble's
+own seed spread), n=50 gives beta_c = 5.959 +/- 0.033 (SEM) for the
+random background vs. 6.419 +/- 0.005 (SEM) for the regular lattice.
+<strong>Gap = 0.460, z = 13.67</strong> -- still overwhelmingly significant, but
+down sharply from n=30's z=51.8. The drop in z is driven mainly by the
+<em>absolute</em> gap itself shrinking about 3x (1.372 at n=30 -&gt; 0.460 at
+n=50): holding the n=30 combined SEM fixed, that gap alone would give
+z ~ 17.4, most of the way from 51.8 to the actual 13.67. The random
+background's larger cross-seed spread at n=50 (SEM 0.033 vs. 0.026) is
+a secondary contributor, not the main driver. In relative terms the
+shift is <strong>7.2%, down from n=30's 12.4%</strong> -- and that relative shift
+times n is nearly constant between the two sizes (12.4%x30=371 vs.
+7.2%x50=358, a 3.6% difference), consistent with the gap itself
+falling off roughly as 1/n over this two-point baseline (two-point
+power-law exponent ~1.07). The cold-phase ordering-fraction gap that
+was clearly present at n=30 (0.583 vs. 0.646) has nearly closed at
+n=50 (0.661 vs. 0.660); the cold-phase MM dimension converges too
+(2.73/2.87 -&gt; 3.60/3.60). The hot phase remains close to
+background-independent, and all 10 n=50 P_beta_c(S) curves (5 per
+background) are single broad humps, no double-peak signature at
+either background
+[<code>results/phase5/random_background_report.md @ 743a94b</code>, Stage 2 section].</p>
+<p><strong>Read plainly</strong>: the background-dependence of the transition looks
+like a finite-size effect that fades with system size, not a
+permanent discrepancy between the two models -- though two data
+points (n=30, n=50) cannot by themselves distinguish that from a
+slower-than-1/n falloff that plateaus above zero. Taking the 1/n
+reading at face value and anchoring at n=50 predicts a relative gap of
+about <strong>5.6% at n=64</strong> (7.2% x 50/64) -- stated here as a concrete,
+checkable number for whoever runs that size next, currently blocked
+on the N&lt;=64 bitset limit (Section 7/8).</p>
+<h2>6. Pitfalls and lessons</h2>
+<p><strong>Right-censored "peaks" and the blind grid-recentering test.</strong> The
+original PT scan's beta_c was, for 7 of 8 tested (N, eps) combinations,
+exactly the largest <em>converged</em> beta in its scan -- i.e. there was no
+converged data confirming the variance actually turns back down past
+the located point. A direct stress test (N=40, deliberately
+re-centering the search grid at 0.6x and 1.6x the formula's
+prediction, both shifts from the original ~0.42x center) found that
+at eps=0.21 the located beta_c relocated to ~7.0 from both directions
+-- nowhere near the original 0.70 or the published 0.82 -- while
+eps=0.5 held up (three grid placements agreed within ~25%)
+[<code>results/phase3/mcmc_2d_report.md @ edb9b99</code>]. Lesson: a beta_c that
+sits at the edge of whatever range was searched is not located; it is
+censored, and should be reported as such until an interior maximum is
+confirmed, grid placement included.</p>
+<p><strong>The beta_c definition mismatch.</strong> An early version of the first-order
+diagnostic used equal-peak-height, not the action-variance maximum
+that Glaser-O'Connor-Surya's own formula was fit to -- checked
+directly against their Sec. 4.1 and corrected before any formula
+comparison was trusted [<code>causet_lab/mcmc/muca.py @ 7d648fa</code>].</p>
+<p><strong>Noise mistaken for a double peak.</strong> A naive peak finder accepted any
+two local maxima regardless of the dip between them, producing a false
+"double peak" at N=30 with a barrier of only 0.004-0.07 across an
+800-point beta scan -- a &lt;7% dip on a single broad hump, not a
+first-order signature. Fixed by requiring a minimum barrier
+(<code>MIN_BARRIER_FOR_BIMODAL = 0.5</code>) before accepting a two-peak
+structure [same source].</p>
+<p><strong>A reweighting estimator blind to its own weight error.</strong> The
+original <code>reweight_P_beta</code> assumed <code>ln_g</code> already equalled the true
+log density of states -- true only once Wang-Landau has fully
+converged. Fixed by folding in the actual MUCA production histogram
+(<code>reweight_P_beta_corrected</code>, the standard Berg-Neuhaus correction),
+which stays exact even with an imperfect weight provided the walk
+visits the region being compared [same source].</p>
+<p><strong>Full-span vs. windowed round trips.</strong> At N=40, requiring a round
+trip to reach the full <code>ever_visited</code> span (up to S=+402) undercounted
+real excursions, since essentially all of P_beta(S)'s mass for the
+beta range being tested sat in a much narrower window (bins 0-85 of
+126). Recounting the same run with that window instead of the full
+span found 4x more round trips in under half the wall-clock time of a
+fresh run -- same physics, same sampling, only the counting criterion
+changed [same source].</p>
+<p><strong>The units bug in the first random-background draft.</strong> The initial
+implementation sprinkled the spatial coordinate as <code>theta</code> in radians
+(period <code>2*pi</code>) and compared it directly against <code>dt</code> in the lattice's
+own integer row units -- silently rescaling the lightcone by a factor
+of <code>w/(2*pi)</code> relative to the regular lattice's own causal relation,
+which compares an integer step count (period <code>w</code>) against <code>dt</code>
+directly. Caught before any sampling was run, by an explicit request
+to check units and add a same-positions equivalence test against the
+regular lattice (Section 2); fixed by sprinkling a coordinate <code>x</code> with
+period <code>w</code> instead. Lesson: "the same region" is not automatically
+"the same causal geometry" once a discrete model is replaced by a
+continuous one -- an explicit reduces-to-the-known-case test is the
+check that would have caught this immediately, and should be written
+<em>before</em> any production sampling, not after.</p>
+<p><strong>A second, different way to mistake noise for a double peak.</strong> The
+existing <code>MIN_BARRIER_FOR_BIMODAL</code> check (above) guards against a
+<em>shallow</em> dip on one broad hump. It does not guard against a <em>deep</em>
+dip where one side of the "peak pair" is simply numerical noise in an
+exponentially suppressed tail: in the random-background analysis
+(Section 5), 4 of 5 realizations' <code>P_beta_c(S)</code> were flagged as
+double-peaked with a large barrier (17-21), but the "second peak" in
+every case sat 8-11 orders of magnitude below the real mode --
+<code>_peak_diagnostics</code>'s <code>peak_val = 0.5*(p[i1]+p[i2])</code> average is
+dominated by the real peak regardless of how negligible the other
+one is, so the barrier calculation never actually tests whether both
+candidate peaks carry physically meaningful probability mass. <strong>Fixed
+upstream</strong> this time, not left as a local workaround: a mass-fraction
+filter (<code>MIN_PEAK_MASS_FRACTION</code>, each candidate peak must exceed 1%
+of the mode) was added directly to <code>_peak_diagnostics</code>
+[<code>causet_lab/mcmc/muca.py</code>], with three regression tests covering the
+deep-tail-bump rejection, a genuine two-peak case, and the boundary
+[<code>causet_lab/tests/test_mcmc.py</code>]. Re-run against Phase 3b's and
+Phase 4's own saved checkpoints: both still report no double peak
+(unchanged); Phase 4's lattice-gas P_beta_c(S) would have shown the
+<em>same</em> spurious double peak (barrier=22.3) had anyone run this check
+on it at the time -- nobody had, so there was no committed claim to
+correct, but it confirms the bug was general, not specific to
+disorder.</p>
+<p><strong>A histogram-widening step that filled new bins flat instead of with
+a gradient.</strong> When Wang-Landau's bin range needs to grow (edge-hit
+pressure), the new block of bins was seeded with a single repeated
+value (the old edge bin's <code>ln_g</code>) rather than a gradient continuing
+the locally observed trend. The bin immediately adjacent to the old
+edge matched its neighbor fine, but bins further into that
+artificially flat block could drift apart from each other under
+ordinary differential visitation; once the walker reached the <em>far</em>
+edge of that drift, a large, unphysical <code>ln_g</code> cliff could open there.
+Found directly at n=50: three of the first ten runs produced
+adjacent-bin <code>ln_g</code> steps of 101-66,767 (vs. 6-11 for every healthy
+run), each exactly at a widened block's far edge, each leaving MUCA
+production stuck at zero round trips after the full 300-million-move
+cap. Fixed by extrapolating the locally-observed slope instead of
+repeating the edge value, clamped so the extrapolation can never
+exceed the edge value (direction) or exceed the single largest step
+actually observed nearby (magnitude) [<code>causet_lab/mcmc/muca.py</code>,
+<code>_widen</code>, with regression tests in <code>test_mcmc.py</code>].</p>
+<p><strong>A kinetically-isolated bin that no amount of reweighting can fix.</strong>
+After the fix above, the same failure signature recurred on one seed
+-- a bin reached only well into the run, not created by any widening
+event. Direct inspection (resuming the exact frozen walker state and
+tabulating where proposed moves actually land) found the bin's nearby
+entropy was unremarkable, but almost no single-site relocation from
+the bulk landed there with any acceptable probability: it was
+<em>kinetically</em>, not thermodynamically, hard to reach. Wang-Landau's
+histogram-flattening heuristic reads sustained under-visitation as
+"needs more weight," which only helps when the cause is low entropy
+-- it cannot fix a reachability problem, since the walker still has
+to get there via an accepted move regardless of that bin's weight.
+Fixed architecturally, not by better seeding: the sampling window is
+now fixed from pilot quantiles rather than left free to adapt, so the
+walker is kept away from the pathological region entirely, with a
+post-hoc check (<code>verify_window_coverage_randombg</code>) confirming nothing
+physically relevant was cut off [<code>causet_lab/mcmc/random_bg.py</code>].</p>
+<h2>7. Limitations</h2>
+<ul>
+<li><strong>Small sizes.</strong> N, n &lt;= 60 throughout (orders PT/MUCA up to N=60;
+  lattice gas and random background up to n=50); the bitset engine's
+  <code>uint64</code>-per-element representation caps every model in this project
+  at N &lt;= 64 without a redesign (see Outlook).</li>
+<li><strong>No cleanly resolved first-order barrier at any size tested.</strong>
+  Hysteresis disagreed between random- and layered-start chains for
+  6/8 (N, eps) PT combinations, the double-peak histogram signature
+  appeared in only 1/8, and MUCA's own P_beta_c(S) is a single broad
+  hump at both N tested (Section 4). Whether this reflects genuinely
+  weak/crossover behavior below the paper's asymptotic regime, or
+  insufficient statistics, is not resolved here.</li>
+<li><strong>Single epsilon for most results.</strong> eps=0.5 is the primary orders-
+  model coupling; eps=0.1 and eps=0.21 appear only as side checks or
+  (eps=0.21) in the earlier, since-superseded PT study. The lattice-gas
+  and random-background models use only eps=0.1, matching C&amp;S's own
+  choice. Section 4's full-formula vs. leading-term comparison is only
+  tabulated at N=30 for eps=0.1 (not N=40); the eps=0.5 table has both.</li>
+<li><strong>Few seeds.</strong> Most orders-model and lattice-gas results are single-
+  seed; Phase 5 (Section 5) is this project's first result with an
+  explicit multi-seed spread, now at two sizes (n=30, n=50). The n=50
+  dataset mixes two sampler methods by seed (5 of 10 re-run under a
+  fixed-window method after two bugs were found, 5 kept from the
+  original run) -- justified by a direct two-seed consistency check
+  (0.002 and 0.008 differences, well inside each ensemble's own
+  spread), not by assumption, but a fully single-method n=50 dataset
+  was not run. The n=50 moves-per-stage/moves-per-round-trip mixing
+  comparison (Section 5/Appendix) rests on only 3 of 5 random-
+  background seeds and 2 of 5 regular-lattice seeds, since the other
+  seeds' per-stage logs were not retained -- too few for a confident
+  per-move mixing-speed claim between backgrounds at n=50, reported as
+  inconclusive rather than rounded to a conclusion.</li>
+<li><strong>Only two system sizes for the background-dependence finding.</strong>
+  The observed gap shrinks from 12.4% (n=30) to 7.2% (n=50), consistent
+  with a finite-size effect, but two points cannot distinguish that
+  from a slower falloff that plateaus above zero. The n=64 test in
+  Section 8 would help distinguish these.</li>
+<li><strong>Two open mechanism questions, neither resolved by the n=50 work.</strong>
+  What actually causes the beta_c shift (Section 5's mechanism check
+  only rules out the simplest explanation, a deeper cold-phase action
+  floor, without identifying the real cause) and why the regular
+  lattice mixed 4x slower than the random background at n=30 under
+  Wang-Landau (Section 5) both remain open; the n=50 wall-clock data is
+  confounded by the sampler-method mix above and was not used to
+  re-test the 4x finding either way.</li>
+<li><strong>Euclideanized weights throughout.</strong> Every model here samples
+  <code>exp(-beta*S_BD)</code> as a real, non-oscillatory Boltzmann weight -- a
+  standard device in this literature, not a Lorentzian quantum
+  path integral with genuine phases. Nothing in this project addresses
+  that gap.</li>
+</ul>
+<h2>8. Outlook</h2>
+<ul>
+<li><strong>Multiword bitsets.</strong> Extending each element's relation bitset from
+  one <code>uint64</code> to two or more machine words would lift the N &lt;= 64 cap
+  that currently excludes n=80 for the lattice gas (explicitly out of
+  scope in Phase 4) and any N &gt; 64 orders-model run.</li>
+<li><strong>Parallel / windowed Wang-Landau.</strong> Phase 3b's N=40 multicanonical
+  recursion plateaued at 1-2 round trips per 30M moves across 8
+  iterations without converging; a windowed, multi-walker WL scheme
+  (rather than single-chain recursion) is the natural next attempt,
+  informed by the round-trip-window fix in Section 6.</li>
+<li><strong>3D reproduction.</strong> Nothing in this project yet repeats the 2D
+  orders calibration in d=3; this would test whether the same
+  right-censoring/blind-regridding failure modes recur in a higher-
+  dimensional order space.</li>
+<li><strong>4D lattice gas.</strong> C&amp;S's own paper covers d&gt;2 lattice gases; this
+  project has only built d=2.</li>
+<li><strong>A cost estimate from a scaling ladder.</strong> Phase 3b found mixing cost
+  rising steeply from N=30 to N=40 (10 round trips in 508s of
+  production vs. 12 round trips needing a windowed-counting fix after
+  a ~1750s WL phase and a non-converging ~3850s recursion phase); a
+  deliberate N=30/40/50/60 (or n=30/50/80, once multiword bitsets
+  exist) ladder, timed consistently, would let a real extrapolated
+  cost curve replace this project's current ad hoc per-size reporting.
+  Phase 5's n=30/n=50 pair is a start for the random-background model
+  specifically, but used two different sampler methods by seed
+  (Section 6/7), so it is not yet the clean, consistently-timed ladder
+  this item calls for.</li>
+<li><strong>A third system size for the background-dependence gap: the n=64
+  test.</strong> The observed shrinkage (12.4% -&gt; 7.2%) is consistent with a
+  finite-size effect but is only two points. n=64 is reachable with no
+  code changes (it is exactly the current <code>N&lt;=64</code> bitset ceiling) and
+  gives a concrete, falsifiable prediction to check: a simple 1/n
+  falloff anchored at n=50 predicts a relative gap of about <strong>5.6%</strong>
+  (7.2% x 50/64); anything well outside that -- a gap that has
+  plateaued above zero, or one that has already closed -- would rule
+  out the simple 1/n reading. n=80 would help further but needs the
+  multiword-bitset extension above first.</li>
+</ul>
+<h2>Code availability</h2>
+<p>All code, tests, scripts, result data, and reports cited in this paper
+live in a single repository (see <code>README.md</code> at the repository root
+for the folder map, installation, and reproduction instructions for
+every number and figure above). A public URL had not been assigned as
+of this writing; the author is responsible for adding it here once the
+repository is published -- see the project README's by-hand checklist.</p>
+<h2>Acknowledgments</h2>
+<p>The code, sampling pipeline, and analysis in this project were
+developed with AI assistance (Anthropic's Claude and Claude Code),
+under direction and review from the author(s). This is stated plainly
+rather than left implicit.</p>
+<h2>Appendix: run parameters, timings, hardware</h2>
+<p><strong>Hardware</strong>: single laptop, Intel64 (Model 158, "Skylake"-class),
+4 logical CPUs, Windows 11 (build 10.0.26200). Python 3.13.2, NumPy
+2.3.2, Numba 0.68.0.</p>
+<p><strong>Per-run timings</strong> (single seed unless noted; WL = Wang-Landau phase,
+MUCA = multicanonical production phase, target 10 round trips
+throughout):</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>N / n</th>
+<th>eps</th>
+<th>WL</th>
+<th>MUCA</th>
+<th>Total</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2D orders (PT, legacy)</td>
+<td>30-60</td>
+<td>0.21, 0.5</td>
+<td>--</td>
+<td>--</td>
+<td>not separately timed (beta-ladder scan)</td>
+<td><code>results/phase3/mcmc_2d_report.md @ edb9b99</code></td>
+</tr>
+<tr>
+<td>2D orders (WL/MUCA)</td>
+<td>30</td>
+<td>0.5</td>
+<td>~1700s</td>
+<td>508s</td>
+<td>~37 min</td>
+<td><code>results/phase3b/muca_calibration_report.md @ 7d648fa</code></td>
+</tr>
+<tr>
+<td>2D orders (WL/MUCA)</td>
+<td>40</td>
+<td>0.5</td>
+<td>~1750s</td>
+<td>457.3s (windowed)</td>
+<td>--</td>
+<td>same</td>
+</tr>
+<tr>
+<td>2D orders (WL/MUCA)</td>
+<td>30</td>
+<td>0.1</td>
+<td>735.5s</td>
+<td>150.1s</td>
+<td>885.6s</td>
+<td><code>results/phase4/lattice_gas_2d_report.md @ 0f85d22</code></td>
+</tr>
+<tr>
+<td>Lattice gas</td>
+<td>30</td>
+<td>0.1</td>
+<td>1613.7s</td>
+<td>948.2s</td>
+<td>2561.8s (~42.7 min)</td>
+<td>same</td>
+</tr>
+<tr>
+<td>Random background (5 realizations)</td>
+<td>30</td>
+<td>0.1</td>
+<td>387.3-1435.5s</td>
+<td>141.1-275.6s</td>
+<td>1623.9s total (all 5, 4 cores)</td>
+<td><code>results/phase5/random_background_report.md @ 3ae1ad5</code></td>
+</tr>
+<tr>
+<td>Regular lattice, matched pipeline (5 chain seeds)</td>
+<td>30</td>
+<td>0.1</td>
+<td>1345.0-5704.3s</td>
+<td>511.1-1057.9s</td>
+<td>6659.9s total (all 5, 4 cores)</td>
+<td>same report, matched-pipeline rerun section</td>
+</tr>
+<tr>
+<td>Random background (5 realizations, mixed method)</td>
+<td>50</td>
+<td>0.1</td>
+<td>1180.3-2745.1s</td>
+<td>245.6-4178.4s</td>
+<td>17590.5s total (all 5, 4 cores)</td>
+<td><code>results/phase5/random_background_report.md @ 743a94b</code>, Stage 2 section</td>
+</tr>
+<tr>
+<td>Regular lattice via rbg pipeline (5 chain seeds, mixed method)</td>
+<td>50</td>
+<td>0.1</td>
+<td>1291.7-2765.9s</td>
+<td>281.5-1398.7s</td>
+<td>12194.7s total (all 5, 4 cores)</td>
+<td>same, Stage 2 section</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Multiprocessing</strong>: Phase 5 stage 1 runs 5 independent realizations
+via <code>ProcessPoolExecutor(max_workers=4)</code> -- 4 concurrent, the 5th
+queued behind whichever finishes first. The matched-pipeline regular-
+lattice rerun took <strong>4x longer in total</strong> than the random-background
+ensemble under identical settings -- see Section 5's mechanism-check
+discussion and Section 6 (not fully explained; flagged as an open
+observation, not a settled finding). The n=50 totals are <strong>not</strong> a
+clean replay of that comparison: each model's 5-seed total mixes two
+sampler methods (some seeds re-run under a fixed-window method after
+two bugs were found, the rest kept from the original adaptive-widening
+run -- the exact split differs slightly by model; see Section 6/7),
+so the n=50 row is not used to re-test the n=30 mixing asymmetry.</p>
+<hr />
+<h2>References</h2>
+<ul>
+<li>D. D. Benincasa, F. Dowker, "Scalar Curvature of a Causal Set,"
+  Phys. Rev. Lett. 104, 181301 (2010), arXiv:1001.2725.</li>
+<li>S. Surya, "Evidence for the Continuum in 2D Causal Set Quantum
+  Gravity," Class. Quantum Grav. 29, 132001 (2012), arXiv:1110.6244.</li>
+<li>L. Glaser, D. O'Connor, S. Surya, "Finite Size Scaling in 2d Causal
+  Set Quantum Gravity," Class. Quantum Grav. 35, 045006 (2018),
+  arXiv:1706.06432.</li>
+<li>W. J. Cunningham, S. Surya, "Dimensionally Restricted Causal Set
+  Quantum Gravity: Examples in Two and Three Dimensions," Class.
+  Quantum Grav. 37, 054002 (2020), arXiv:1908.11647.</li>
+<li>B. A. Berg, T. Neuhaus, "Multicanonical algorithms for first order
+  phase transitions," Phys. Lett. B 267, 249 (1991). No arXiv ID on
+  record (pre-arXiv-era).</li>
+<li>F. Wang, D. P. Landau, "Efficient, Multiple-Range Random Walk
+  Algorithm to Calculate the Density of States," Phys. Rev. Lett. 86,
+  2050 (2001), arXiv:cond-mat/0011174. Cited by name for the WL
+  method (Section 3); not separately fetched and checked equation-by-
+  equation against this project's implementation, unlike the four
+  causal-set papers and the Berg-Neuhaus paper above.</li>
+<li>R. H. Swendsen, J.-S. Wang, "Replica Monte Carlo Simulation of
+  Spin-Glasses," Phys. Rev. Lett. 57, 2607 (1986). Cited by name for
+  parallel tempering / replica exchange (Section 3), same caveat as
+  Wang-Landau above.</li>
+</ul>
+</body></html>

@@ -1,18 +1,16 @@
 ---
 title: "An open-source multicanonical sampler for 2D causal set quantum gravity: validation and a random-background lattice-gas comparison"
-status: DRAFT -- working title, not for distribution
+status: "Independent project report, v1 (2026-10-09) -- not peer reviewed"
 ---
 
-> **How to read the citations in this draft.** Every numeric claim below is
-> tagged `[source @ commit]`, naming the exact report file and git commit
-> hash in this repository the number was taken from. `[uncommitted: path]`
-> marks a number that exists (e.g. in a test's printed output or a
-> still-running job's log) but has not yet been committed to git at
-> draft time. `[TBD: ...]` marks a result this draft is waiting on.
-> Paper citations use only works this project actually fetched and
-> checked against its own code, listed in full at first use and
-> collected at the end; no arXiv ID is invented for a source that
-> doesn't have one on record here.
+> **How to read the citations in this paper.** Every numeric claim below
+> is tagged `[source @ commit]`, naming the exact report file and git
+> commit hash in this repository the number was taken from, so any
+> number here can be traced back to the exact code and data that
+> produced it. Paper citations use only works this project actually
+> fetched and checked against its own code, listed in full at first use
+> and collected in the References section at the end; no arXiv ID is
+> invented for a source that doesn't have one on record here.
 
 ## Abstract
 
@@ -38,10 +36,15 @@ detailed statistics are close to background-independent. A direct
 mechanism check rules out the simplest explanation (the random
 background reaching a deeper cold-phase action floor); the real
 mechanism is left as an open question. At n=50, the gap survives
-(z=13.7) but shrinks to about 7%, and the cold-phase observable
-difference most visible at n=30 nearly closes -- consistent with a
-finite-size effect fading with system size, from two data points.
-Getting a trustworthy n=50 result required finding and fixing two
+(z=13.7) but shrinks to about 7%, driven mainly by the absolute gap
+itself falling about 3x (1.372 -> 0.460), and the cold-phase observable
+difference most visible at n=30 nearly closes. The relative gap times
+n is nearly constant across the two sizes (12.4%x30=371 vs.
+7.2%x50=358), consistent with -- but, from two points, not proof of --
+a finite-size effect falling off roughly as 1/n; taken at face value
+this predicts about a 5.6% relative gap at n=64, the next size
+reachable without a bitset-engine rewrite. Getting a trustworthy n=50
+result required finding and fixing two
 further sampler bugs invisible at n=30: an adaptive-histogram-widening
 step that filled new bins with a flat value instead of a gradient
 (creating an unphysical "cliff" the walker could get trapped behind),
@@ -148,8 +151,8 @@ Section 6 for how a units mismatch here was initially missed).
 **Equivalence check**: placing the background exactly at the regular
 lattice's own integer positions reproduces `lattice_gas.lattice_to_matrix`
 bit-for-bit, including the lightlike (`<=`) convention, across 3 sizes
-and 5 seeds each [`causet_lab/tests/test_random_bg.py::test_random_bg_at_lattice_positions_matches_lattice_exactly`,
-uncommitted at draft time -- all 3 parametrizations pass].
+and 5 seeds each [`causet_lab/tests/test_random_bg.py::test_random_bg_at_lattice_positions_matches_lattice_exactly`
+@ 1ff7ef3; all 3 parametrizations pass].
 
 ## 3. Methods
 
@@ -168,10 +171,17 @@ element's relations fit in one machine word); see Section 7.
 at a ladder of beta values, with swap moves between neighbors and
 round-trip tracking to confirm replicas actually cross the transition
 rather than merely reporting a locally-plausible swap rate
-[`causet_lab/mcmc/tempering.py`].
+[`causet_lab/mcmc/tempering.py`]. The method traces to exchange Monte
+Carlo / replica exchange [Swendsen & Wang, Phys. Rev. Lett. 57, 2607
+(1986)]; this project implemented it from the general replica-exchange
+description rather than fetching and checking a specific paper's
+equations against the code (unlike the citations marked `@ commit`
+elsewhere in this paper), so it is cited by name only, without that
+same code-level verification.
 
 **Wang-Landau + multicanonical (WL/MUCA).** Replacing PT (see Section
-6 for why): Wang-Landau estimates the action density of states g(S) by
+6 for why): Wang-Landau [Wang & Landau, Phys. Rev. Lett. 86, 2050
+(2001)] estimates the action density of states g(S) by
 an adaptive-weight random walk that flattens the visited-bin histogram
 across the whole reachable range (stage-doubling modification factor,
 with stall detection distinguishing a genuinely unreachable bin from a
@@ -242,10 +252,13 @@ converged beta in that scan, not a confirmed interior maximum; see
 Section 6). The independent WL/MUCA run above located 0.1478 +/- 0.0004
 using a method that locates an interior maximum directly rather than
 scanning outward from a fixed grid. The two agree to within 0.001
-[`results/phase3b/muca_calibration_report.md @ 7d648fa`] -- read as two
-different sampling methods landing on the same number, not as two
-independent *confirmations* of a physical beta_c, since the first was
-never confirmed interior in its own right.
+[`results/phase3b/muca_calibration_report.md @ 7d648fa`]. This is read
+cautiously, as a number consistent with two different sampling methods
+rather than proof of a shared, confirmed beta_c: because the PT value
+was never independently confirmed interior in its own right, the
+agreement cannot rule out the two methods both landing near the same
+right-censoring edge by coincidence, however unlikely that may seem
+given how differently the two methods search the space.
 
 **Lattice gas 2D: controls and qualitative phase comparison.** beta=0
 (uniformly random fillings) sampled as sub-intervals (since the
@@ -405,21 +418,34 @@ clean -- differences of 0.002 and 0.008, well inside each ensemble's
 own seed spread), n=50 gives beta_c = 5.959 +/- 0.033 (SEM) for the
 random background vs. 6.419 +/- 0.005 (SEM) for the regular lattice.
 **Gap = 0.460, z = 13.67** -- still overwhelmingly significant, but
-the *relative* shift is **7.2%, down from n=30's 12.4%**. The
-cold-phase ordering-fraction gap that was clearly present at n=30
-(0.583 vs. 0.646) has nearly closed at n=50 (0.661 vs. 0.660); the
-cold-phase MM dimension converges too (2.73/2.87 -> 3.60/3.60). The
-hot phase remains close to background-independent, and all 10 n=50
-P_beta_c(S) curves (5 per background) are single broad humps, no
-double-peak signature at either background
+down sharply from n=30's z=51.8. The drop in z is driven mainly by the
+*absolute* gap itself shrinking about 3x (1.372 at n=30 -> 0.460 at
+n=50): holding the n=30 combined SEM fixed, that gap alone would give
+z ~ 17.4, most of the way from 51.8 to the actual 13.67. The random
+background's larger cross-seed spread at n=50 (SEM 0.033 vs. 0.026) is
+a secondary contributor, not the main driver. In relative terms the
+shift is **7.2%, down from n=30's 12.4%** -- and that relative shift
+times n is nearly constant between the two sizes (12.4%x30=371 vs.
+7.2%x50=358, a 3.6% difference), consistent with the gap itself
+falling off roughly as 1/n over this two-point baseline (two-point
+power-law exponent ~1.07). The cold-phase ordering-fraction gap that
+was clearly present at n=30 (0.583 vs. 0.646) has nearly closed at
+n=50 (0.661 vs. 0.660); the cold-phase MM dimension converges too
+(2.73/2.87 -> 3.60/3.60). The hot phase remains close to
+background-independent, and all 10 n=50 P_beta_c(S) curves (5 per
+background) are single broad humps, no double-peak signature at
+either background
 [`results/phase5/random_background_report.md @ 743a94b`, Stage 2 section].
 
 **Read plainly**: the background-dependence of the transition looks
 like a finite-size effect that fades with system size, not a
 permanent discrepancy between the two models -- though two data
 points (n=30, n=50) cannot by themselves distinguish that from a
-slower-than-1/n falloff that plateaus above zero; a third size would
-be needed, currently blocked on the N<=64 bitset limit (Section 7).
+slower-than-1/n falloff that plateaus above zero. Taking the 1/n
+reading at face value and anchoring at n=50 predicts a relative gap of
+about **5.6% at n=64** (7.2% x 50/64) -- stated here as a concrete,
+checkable number for whoever runs that size next, currently blocked
+on the N<=64 bitset limit (Section 7/8).
 
 ## 6. Pitfalls and lessons
 
@@ -563,19 +589,35 @@ physically relevant was cut off [`causet_lab/mcmc/random_bg.py`].
   model coupling; eps=0.1 and eps=0.21 appear only as side checks or
   (eps=0.21) in the earlier, since-superseded PT study. The lattice-gas
   and random-background models use only eps=0.1, matching C&S's own
-  choice.
+  choice. Section 4's full-formula vs. leading-term comparison is only
+  tabulated at N=30 for eps=0.1 (not N=40); the eps=0.5 table has both.
 - **Few seeds.** Most orders-model and lattice-gas results are single-
   seed; Phase 5 (Section 5) is this project's first result with an
   explicit multi-seed spread, now at two sizes (n=30, n=50). The n=50
   dataset mixes two sampler methods by seed (5 of 10 re-run under a
   fixed-window method after two bugs were found, 5 kept from the
-  original run) -- justified by a direct two-seed consistency check,
-  not by assumption, but a fully single-method n=50 dataset was not
-  run.
+  original run) -- justified by a direct two-seed consistency check
+  (0.002 and 0.008 differences, well inside each ensemble's own
+  spread), not by assumption, but a fully single-method n=50 dataset
+  was not run. The n=50 moves-per-stage/moves-per-round-trip mixing
+  comparison (Section 5/Appendix) rests on only 3 of 5 random-
+  background seeds and 2 of 5 regular-lattice seeds, since the other
+  seeds' per-stage logs were not retained -- too few for a confident
+  per-move mixing-speed claim between backgrounds at n=50, reported as
+  inconclusive rather than rounded to a conclusion.
 - **Only two system sizes for the background-dependence finding.**
   The observed gap shrinks from 12.4% (n=30) to 7.2% (n=50), consistent
   with a finite-size effect, but two points cannot distinguish that
-  from a slower falloff that plateaus above zero.
+  from a slower falloff that plateaus above zero. The n=64 test in
+  Section 8 would help distinguish these.
+- **Two open mechanism questions, neither resolved by the n=50 work.**
+  What actually causes the beta_c shift (Section 5's mechanism check
+  only rules out the simplest explanation, a deeper cold-phase action
+  floor, without identifying the real cause) and why the regular
+  lattice mixed 4x slower than the random background at n=30 under
+  Wang-Landau (Section 5) both remain open; the n=50 wall-clock data is
+  confounded by the sampler-method mix above and was not used to
+  re-test the 4x finding either way.
 - **Euclideanized weights throughout.** Every model here samples
   `exp(-beta*S_BD)` as a real, non-oscillatory Boltzmann weight -- a
   standard device in this literature, not a Lorentzian quantum
@@ -610,14 +652,25 @@ physically relevant was cut off [`causet_lab/mcmc/random_bg.py`].
   specifically, but used two different sampler methods by seed
   (Section 6/7), so it is not yet the clean, consistently-timed ladder
   this item calls for.
-- **A third system size for the background-dependence gap.** The
-  observed shrinkage (12.4% -> 7.2%) is consistent with a finite-size
-  effect but is only two points; n=80 would help, and needs the
+- **A third system size for the background-dependence gap: the n=64
+  test.** The observed shrinkage (12.4% -> 7.2%) is consistent with a
+  finite-size effect but is only two points. n=64 is reachable with no
+  code changes (it is exactly the current `N<=64` bitset ceiling) and
+  gives a concrete, falsifiable prediction to check: a simple 1/n
+  falloff anchored at n=50 predicts a relative gap of about **5.6%**
+  (7.2% x 50/64); anything well outside that -- a gap that has
+  plateaued above zero, or one that has already closed -- would rule
+  out the simple 1/n reading. n=80 would help further but needs the
   multiword-bitset extension above first.
 
 ## Code availability
 
-[TBD: repository link -- not yet public/assigned at draft time.]
+All code, tests, scripts, result data, and reports cited in this paper
+live in a single repository (see `README.md` at the repository root
+for the folder map, installation, and reproduction instructions for
+every number and figure above). A public URL had not been assigned as
+of this writing; the author is responsible for adding it here once the
+repository is published -- see the project README's by-hand checklist.
 
 ## Acknowledgments
 
@@ -663,56 +716,28 @@ so the n=50 row is not used to re-test the n=30 mixing asymmetry.
 
 ---
 
-## Summary of [TBD] items and claims needing follow-up
+## References
 
-Resolved since the previous draft: the n=50 stage-2 result (Abstract,
-Section 5) -- beta_c gap shrinks from 12.4% (n=30) to 7.2% (n=50,
-z=13.67), cold-phase observable gap nearly closes, no double-peak
-signature at any of the 10 n=50 seeds; the two further sampler bugs
-found while getting that result, fixed upstream with regression tests
-(Section 6); the Appendix table's n=50 timing rows. All cited to
-`results/phase5/random_background_report.md @ 743a94b`.
-
-Still open:
-
-1. **Code availability**: no repository URL assigned yet.
-2. **Section 4's N=40, eps=0.1 formula leading-term** comparison was
-   not separately tabulated (only N=30, eps=0.1 was); add if a reviewer
-   wants the N=40 analogue.
-3. **Claim I am least certain how to support cleanly**: the Section 4
-   "PT vs MUCA agreement" framing. The two numbers (0.14797 and
-   0.1478) agree, but since the PT value is independently flagged as
-   right-censored in its own source report, I am not fully confident
-   the phrase "two different sampling methods landing on the same
-   number" is the right level of claim versus something weaker (e.g.
-   "consistent with, but not proof of" a real feature there) --
-   flagging this for a second opinion before it goes in anything more
-   final than this draft.
-4. **Wang-Landau and PT themselves are described by name without a
-   pinned citation** (no paper using those exact terms was fetched and
-   checked against this project's code, unlike the four causal-set
-   papers and the Berg-Neuhaus one, which were). Add standard
-   citations (Wang & Landau 2001; parallel tempering's standard
-   references) if the published version needs them -- deliberately
-   left out here rather than guessed.
-5. **The mechanism behind the original n=30 beta_c shift** (Section 5)
-   and **the n=30 regular lattice's 4x-slower mixing under that
-   pipeline** (Section 5/6) remain genuine open questions from the
-   previous round, not resolved by the n=50 work -- the n=50 mixing
-   data is confounded by the sampler-method mix (item 6) and was not
-   used to re-test the 4x finding either way.
-6. **The n=50 dataset mixes two sampler methods by seed** (Section 5
-   /6/7): justified by a direct two-seed consistency check (0.002 and
-   0.008 differences, well inside each ensemble's own spread), not by
-   assumption, but a reviewer wanting a methodologically uniform n=50
-   dataset would need all 10 seeds re-run under the fixed-window
-   method -- not done here since the two checked seeds already showed
-   no material difference.
-7. **n=50's moves-per-stage/moves-per-round-trip mixing figures rest
-   on only 3 (random) and 2 (regular) seeds** -- the other seeds'
-   per-stage logs were not retained -- too few for a confident
-   per-move mixing-speed claim between backgrounds at n=50.
-8. **Only two system sizes (n=30, n=50)** support the "finite-size
-   effect fading with n" reading of the beta_c gap; a third size
-   (blocked on the N<=64 bitset limit, Section 7/8) would be needed
-   to fit the falloff itself.
+- D. D. Benincasa, F. Dowker, "Scalar Curvature of a Causal Set,"
+  Phys. Rev. Lett. 104, 181301 (2010), arXiv:1001.2725.
+- S. Surya, "Evidence for the Continuum in 2D Causal Set Quantum
+  Gravity," Class. Quantum Grav. 29, 132001 (2012), arXiv:1110.6244.
+- L. Glaser, D. O'Connor, S. Surya, "Finite Size Scaling in 2d Causal
+  Set Quantum Gravity," Class. Quantum Grav. 35, 045006 (2018),
+  arXiv:1706.06432.
+- W. J. Cunningham, S. Surya, "Dimensionally Restricted Causal Set
+  Quantum Gravity: Examples in Two and Three Dimensions," Class.
+  Quantum Grav. 37, 054002 (2020), arXiv:1908.11647.
+- B. A. Berg, T. Neuhaus, "Multicanonical algorithms for first order
+  phase transitions," Phys. Lett. B 267, 249 (1991). No arXiv ID on
+  record (pre-arXiv-era).
+- F. Wang, D. P. Landau, "Efficient, Multiple-Range Random Walk
+  Algorithm to Calculate the Density of States," Phys. Rev. Lett. 86,
+  2050 (2001), arXiv:cond-mat/0011174. Cited by name for the WL
+  method (Section 3); not separately fetched and checked equation-by-
+  equation against this project's implementation, unlike the four
+  causal-set papers and the Berg-Neuhaus paper above.
+- R. H. Swendsen, J.-S. Wang, "Replica Monte Carlo Simulation of
+  Spin-Glasses," Phys. Rev. Lett. 57, 2607 (1986). Cited by name for
+  parallel tempering / replica exchange (Section 3), same caveat as
+  Wang-Landau above.

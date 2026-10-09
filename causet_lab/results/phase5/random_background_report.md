@@ -468,21 +468,40 @@ overhead.
 **Regular lattice: beta_c = 6.419 +/- 0.005 (SEM), std = 0.010.**
 Gap = 0.460, combined SEM = sqrt(0.033^2 + 0.005^2) = 0.0336,
 **z = 13.67**. The gap is overwhelmingly significant again at n=50,
-though less extreme than n=30's z=51.8 -- almost entirely because the
-random background's own cross-seed spread is larger at n=50 (SEM
-0.033 vs. 0.026), not because the gap itself shrank in absolute terms
-by much.
+though less extreme than n=30's z=51.8. Decomposing `ln(z)`'s change
+into its two factors (gap and combined SEM) shows the **absolute gap
+shrinking is the main driver**: the gap itself fell about 3x in
+absolute terms (1.372 -> 0.460), which alone would cut z from 51.8 to
+~17.4 (1.372/0.0265 -> 0.460/0.0265); the random background's larger
+cross-seed spread at n=50 (SEM 0.033 vs. 0.026) is a secondary
+contributor, accounting for roughly the remaining difference between
+that 17.4 and the actual 13.67. An earlier version of this report
+stated the reverse (spread growth as the main driver, gap shrinkage as
+incidental) -- that was a mechanical error, caught on request from the
+PI, not a re-measurement; the underlying numbers (beta_c, SEMs, gap,
+z) are unchanged.
 
 **Relative shift: 7.16% at n=50, vs. 12.37% at n=30.** The regular
 lattice's own beta_c dropped from 11.095 (n=30) to 6.419 (n=50) --
 consistent with the expected 1/n-ish falloff for this model class --
 and the random background's gap *relative to it* shrank by nearly
-half. **The background-dependence of the transition looks like a
-finite-size effect that fades as n grows**, not a permanent,
-size-independent discrepancy between the two models. This is stated as
-what two data points (n=30, n=50) show, not as a confirmed asymptotic
-law -- a third size would be needed to fit a genuine 1/n-type falloff
-of the gap itself.
+half. Multiplying the relative shift by n gives a near-constant: 12.37%
+x 30 = 371 vs. 7.16% x 50 = 358, a 3.6% difference between the two
+system sizes -- i.e. the *absolute* gap itself looks like it falls off
+roughly as 1/n, the same scaling as beta_c itself, over this two-point
+baseline. Fitting a two-point power law `relative_gap(n) ~ n^-alpha`
+through exactly these two values gives alpha ~ 1.07, consistent with
+(but of course not a confirmation of) a pure 1/n falloff (alpha=1)
+given only two points. **The background-dependence of the transition
+looks like a finite-size effect that fades as n grows**, not a
+permanent, size-independent discrepancy between the two models. This
+is stated as what two data points (n=30, n=50) show, not as a
+confirmed asymptotic law -- a third size would be needed to fit a
+genuine 1/n-type falloff of the gap itself. Taking the simple 1/n
+scaling at face value and anchoring it at n=50 predicts a relative gap
+of about **5.6% at n=64** (7.16% x 50/64) -- the largest n reachable
+without a multiword-bitset rewrite (Section 7/8) -- stated here as a
+falsifiable number for whoever runs that size next.
 
 ### P_beta_c(S) shape
 

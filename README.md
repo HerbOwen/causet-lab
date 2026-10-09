@@ -29,9 +29,13 @@ tested: 9.723 vs. 11.095 at n=30 (z=51.8, a ~12% relative shift) and
 5.959 vs. 6.419 at n=50 (z=13.67, ~7%). The relative shift times n is
 close to constant across the two sizes (12.4%x30=371 vs. 7.2%x50=358),
 consistent with — but, from only two points, not proof of — a
-finite-size effect that fades roughly as 1/n; a direct mechanism check
-rules out the simplest explanation (the random background reaching a
-deeper cold-phase action floor) without identifying the real cause.
+finite-size effect that fades roughly as 1/n; taken at face value, the
+same reading predicts a relative gap of only about 1.8% at n=200 (the
+system size Cunningham & Surya themselves use), small enough that
+their published 2D results are plausibly only mildly affected. A
+direct mechanism check rules out the simplest explanation (the random
+background reaching a deeper cold-phase action floor) without
+identifying the real cause.
 Caveats that matter: only two system sizes (`N<=64` is a hard limit of
 the current bitset engine, see below), the n=50 dataset mixes two
 sampler methods by seed (justified by a 2-seed consistency check, not

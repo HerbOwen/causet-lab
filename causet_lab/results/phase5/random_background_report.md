@@ -487,21 +487,30 @@ consistent with the expected 1/n-ish falloff for this model class --
 and the random background's gap *relative to it* shrank by nearly
 half. Multiplying the relative shift by n gives a near-constant: 12.37%
 x 30 = 371 vs. 7.16% x 50 = 358, a 3.6% difference between the two
-system sizes -- i.e. the *absolute* gap itself looks like it falls off
-roughly as 1/n, the same scaling as beta_c itself, over this two-point
-baseline. Fitting a two-point power law `relative_gap(n) ~ n^-alpha`
-through exactly these two values gives alpha ~ 1.07, consistent with
-(but of course not a confirmation of) a pure 1/n falloff (alpha=1)
-given only two points. **The background-dependence of the transition
-looks like a finite-size effect that fades as n grows**, not a
-permanent, size-independent discrepancy between the two models. This
-is stated as what two data points (n=30, n=50) show, not as a
-confirmed asymptotic law -- a third size would be needed to fit a
-genuine 1/n-type falloff of the gap itself. Taking the simple 1/n
-scaling at face value and anchoring it at n=50 predicts a relative gap
-of about **5.6% at n=64** (7.16% x 50/64) -- the largest n reachable
-without a multiword-bitset rewrite (Section 7/8) -- stated here as a
-falsifiable number for whoever runs that size next.
+system sizes -- i.e. the *relative* gap falls off roughly as 1/n, the
+same scaling beta_c itself follows here, over this two-point baseline.
+Fitting a two-point power law `relative_gap(n) ~ n^-alpha` through
+exactly these two values gives alpha ~ 1.07, consistent with (but of
+course not a confirmation of) a pure 1/n falloff (alpha=1) given only
+two points.
+
+Because the *absolute* gap is the relative gap times beta_c, and both
+factors fall off at roughly 1/n here, the absolute gap should fall off
+faster, close to 1/n^2 -- and it does: 1.372 at n=30 to 0.460 at n=50
+is a 2.98x drop, close to the (50/30)^2 = 2.78x a pure 1/n^2 law
+predicts, well past the 1.67x a 1/n falloff of the absolute gap alone
+would give. **The background-dependence of the transition looks like
+a finite-size effect that fades as n grows**, not a permanent,
+size-independent discrepancy between the two models. This is stated as
+what two data points (n=30, n=50) show, not as a confirmed asymptotic
+law -- a third size would be needed to fit a genuine 1/n-type falloff
+of the relative gap itself. Taking the simple 1/n scaling of the
+relative gap at face value and anchoring it at n=50 predicts a
+relative gap of about **5.6% at n=64** (7.16% x 50/64) -- the largest n
+reachable without a multiword-bitset rewrite (Section 7/8) -- stated
+here as a falsifiable number for whoever runs that size next.
+Extrapolating the same reading out to n=200 (C&S's own system size,
+far beyond anything run in this project) gives about 1.8%.
 
 ### P_beta_c(S) shape
 

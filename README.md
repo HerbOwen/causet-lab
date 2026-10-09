@@ -9,7 +9,8 @@ against a random (quenched Poisson) background.
 **Start here**: [`causet_lab/results/writeup/note.md`](causet_lab/results/writeup/note.md)
 (also as [`note.pdf`](causet_lab/results/writeup/note.pdf)) is a 3-4
 page note leading with Cunningham & Surya's own open question
-(arXiv:1908.11647, Sec. 6) and this project's answer to it -- read
+(arXiv:1908.11647, Sec. 5, their Conclusions) and this project's
+answer to it -- read
 this first. [`full_report.md`](causet_lab/results/writeup/full_report.md)
 (also [`full_report.html`](causet_lab/results/writeup/full_report.html) /
 [`full_report.pdf`](causet_lab/results/writeup/full_report.pdf)) is the

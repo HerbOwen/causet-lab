@@ -15,11 +15,13 @@ by placing causal-set elements on a fixed *regular* lattice embedded
 in a cylinder spacetime, rather than sampling generic partial orders
 directly. It reproduces the generic model's phase transition between a
 manifold-like phase and a layered, highly-ordered phase at much lower
-computational cost. In their Section 6, C&S note explicitly that this
-regular background is a modeling choice, not a physical requirement,
-and that checking whether it biases the result -- as opposed to using
-"a more realistic model of discreteness" -- is an open question they
-raise but do not pursue.
+computational cost. In their Conclusions (Sec. 5), C&S write: "we have
+chosen a specific, regular lattice, and we don't yet know whether our
+results will change with a different lattice geometry. A more natural
+choice for the background lattice is a random m element causal set
+obtained via a sprinkling into (M, g). It would be important to
+explore simulations on such lattices and compare with our current
+results" -- flagged as future work, not pursued in their paper.
 
 ## The answer
 
@@ -44,7 +46,12 @@ Using a Wang-Landau / multicanonical sampler (built to replace an
 earlier parallel-tempering scan whose results turned out to be mostly
 right-censored -- see `full_report.md` Section 6), we located the
 critical coupling beta_c at two system sizes, n=30 and n=50, for both
-backgrounds, with 5 independent realizations each:
+backgrounds. "5 seeds" means different things for the two backgrounds:
+for the random background, 5 independent background realizations
+(5 different quenched sprinklings, each with its own Monte Carlo
+chain); for the regular lattice, which is the same deterministic
+lattice every time, 5 independent Monte Carlo chain seeds on that one
+lattice:
 
 | n | Random background beta_c | Regular lattice beta_c | Gap | z | Relative shift |
 |---|---|---|---|---|---|
@@ -58,18 +65,32 @@ conventional significance threshold). The regular-lattice value at
 n=30 is also cross-checked against this project's independent earlier
 measurement of the same model (within about 2 standard deviations),
 and the random background's result is robust to the exact pipeline
-used to produce it (two different Wang-Landau sampling methods agree
-to within 0.008 on two directly re-checked seeds).
+used to produce it: two different Wang-Landau sampling methods agree
+to within 0.008, checked by directly re-running one seed from each
+background (one random-background realization, one regular-lattice
+chain seed) under both methods.
 
-**The gap shrinks with size, consistent with (not proven by) 1/n
-scaling.** The relative shift times n is close to constant across the
-two sizes we tested (12.4% x 30 = 371 vs. 7.2% x 50 = 358, a two-point
-power-law exponent of about 1.07), suggesting the absolute gap falls
-off at roughly the same rate as beta_c itself. Taken at face value,
-this predicts a relative shift of about 5.6% at n=64 -- the largest
-size reachable with this project's current code without a bitset-
-engine rewrite (every model here caps out at N, n <= 64) -- a concrete
-number anyone can check against a direct run.
+**The *relative* gap shrinks with size, consistent with (not proven
+by) 1/n scaling -- the same rate beta_c itself falls off here.** The
+relative shift times n is close to constant across the two sizes we
+tested (12.4% x 30 = 371 vs. 7.2% x 50 = 358, a two-point power-law
+exponent of about 1.07). Because the *absolute* gap is the relative
+gap times beta_c, and both factors fall off at roughly 1/n, the
+absolute gap falls off faster, close to 1/n^2: it drops 2.98x from
+n=30 to n=50 (1.372 -> 0.460), close to the (50/30)^2 = 2.78x a pure
+1/n^2 law predicts, not the 1.67x a 1/n law on the absolute gap alone
+would give. Taken at face value, the 1/n relative-gap reading predicts
+a relative shift of about 5.6% at n=64 -- the largest size reachable
+with this project's current code without a bitset-engine rewrite
+(every model here caps out at N, n <= 64) -- a concrete number anyone
+can check against a direct run. Extrapolating further (well beyond
+where this project has any data, so treat this as a back-of-envelope
+number, not a result): at n=200, the system size C&S themselves use
+for their 2D lattice gas, the same 1/n reading predicts a relative gap
+of only about **1.8%** -- small enough that it's plausible their
+published 2D results are only mildly affected by the regular
+background, and directly testable by running their own code on a
+sprinkled background at their own system size.
 
 **We checked and ruled out the simplest mechanism.** A natural guess
 is that the random background simply reaches a deeper, more-ordered
@@ -94,9 +115,10 @@ the transition sits, not about resolving its order.
 
 ## Caveats
 
-- **Only two system sizes.** The 1/n-consistent shrinkage above is a
-  two-point observation, not a fitted law; a third size (n=64 is the
-  concrete next test) would meaningfully sharpen this.
+- **Only two system sizes.** The 1/n-consistent shrinkage of the
+  *relative* gap above is a two-point observation, not a fitted law;
+  a third size (n=64 is the concrete next test) would meaningfully
+  sharpen this.
 - **Mixed sampler methods at n=50.** Two Wang-Landau bugs were found
   and fixed partway through the n=50 runs (an unphysical histogram
   cliff from a flat-fill widening step, and a genuinely
@@ -108,6 +130,15 @@ the transition sits, not about resolving its order.
   n=50 dataset was not produced.
 - **Mechanism still open.** We ruled out the simplest explanation for
   *why* the backgrounds differ, not the real cause.
+- **The lattice causal relation is our own derivation, not a quote.**
+  C&S's paper states 45-degree lightcones and cylinder wraparound but
+  does not give an explicit integer-coordinate formula, so we derived
+  one ourselves (shortest arc on the circumference) and flagged it
+  explicitly as our own construction rather than a quote. Supporting
+  evidence that it matches their intended model: our regular-lattice
+  hot phase reproduces their own quoted ordering fraction almost
+  exactly (0.882 here vs. their 0.88), which would be a coincidence if
+  the causal relation were substantially wrong.
 - **2D only.** C&S's own paper, and the underlying causal-set action,
   both extend to higher dimensions; this project has not run a 3D or
   4D version of either model.

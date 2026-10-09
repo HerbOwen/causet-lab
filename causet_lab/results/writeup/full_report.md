@@ -101,12 +101,16 @@ d-dimensional cylinder spacetime, and Monte Carlo moves relocate one
 element to an unoccupied site [Cunningham & Surya 2019, arXiv:1908.11647].
 This "dimensionally restricted" construction reproduces the generic
 model's qualitative manifold-like/layered phase transition at much
-lower computational cost, but the background lattice is regular --
-C&S note explicitly that checking whether this regularity biases the
-causal structure (as opposed to using "a more realistic model of
-discreteness", i.e. a randomly sprinkled background) is an open
-question they do not pursue. Section 5 below is this project's own
-attempt at that comparison.
+lower computational cost, but the background lattice is regular. In
+their own Conclusions (Sec. 5 of their paper, not to be confused with
+Section 5 of this report below), C&S write: "we have chosen a
+specific, regular lattice, and we don't yet know whether our results
+will change with a different lattice geometry. A more natural choice
+for the background lattice is a random m element causal set obtained
+via a sprinkling into (M, g). It would be important to explore
+simulations on such lattices and compare with our current results"
+[Cunningham & Surya 2019, arXiv:1908.11647, Sec. 5]. Section 5 below
+is this project's own attempt at exactly that comparison.
 
 ## 2. Models
 
@@ -427,11 +431,17 @@ n=50): holding the n=30 combined SEM fixed, that gap alone would give
 z ~ 17.4, most of the way from 51.8 to the actual 13.67. The random
 background's larger cross-seed spread at n=50 (SEM 0.033 vs. 0.026) is
 a secondary contributor, not the main driver. In relative terms the
-shift is **7.2%, down from n=30's 12.4%** -- and that relative shift
+shift is **7.2%, down from n=30's 12.4%** -- and that *relative* shift
 times n is nearly constant between the two sizes (12.4%x30=371 vs.
-7.2%x50=358, a 3.6% difference), consistent with the gap itself
+7.2%x50=358, a 3.6% difference), consistent with the relative gap
 falling off roughly as 1/n over this two-point baseline (two-point
-power-law exponent ~1.07). The cold-phase ordering-fraction gap that
+power-law exponent ~1.07) -- the same rate beta_c itself falls off
+here. Because the absolute gap is the relative gap times beta_c, and
+both factors fall off at ~1/n, the absolute gap falls off faster,
+close to 1/n^2: its 2.98x drop (1.372 -> 0.460) is close to the
+(50/30)^2 = 2.78x a pure 1/n^2 law predicts, well past the 1.67x a
+1/n falloff of the absolute gap alone would give. The cold-phase
+ordering-fraction gap that
 was clearly present at n=30 (0.583 vs. 0.646) has nearly closed at
 n=50 (0.661 vs. 0.660); the cold-phase MM dimension converges too
 (2.73/2.87 -> 3.60/3.60). The hot phase remains close to
@@ -444,10 +454,16 @@ either background
 like a finite-size effect that fades with system size, not a
 permanent discrepancy between the two models -- though two data
 points (n=30, n=50) cannot by themselves distinguish that from a
-slower-than-1/n falloff that plateaus above zero. Taking the 1/n
-reading at face value and anchoring at n=50 predicts a relative gap of
-about **5.6% at n=64** (7.2% x 50/64) -- stated here as a concrete,
-checkable number for whoever runs that size next, currently blocked
+slower-than-1/n falloff of the relative gap that plateaus above zero.
+Taking the 1/n reading of the relative gap at face value and anchoring
+at n=50 predicts a relative gap of about **5.6% at n=64** (7.2% x
+50/64) -- stated here as a concrete, checkable number for whoever runs
+that size next. Extrapolating the same reading (well beyond this
+project's own data) to n=200, the system size C&S themselves use for
+their 2D lattice gas, gives about 1.8% -- small enough that their
+published results are plausibly only mildly affected by the regular
+background, a claim directly testable with their own code on a
+sprinkled background. The n=64 test is currently blocked
 on the N<=64 bitset limit (Section 7/8).
 
 ## 6. Pitfalls and lessons
@@ -666,11 +682,12 @@ physically relevant was cut off [`causet_lab/mcmc/random_bg.py`].
   finite-size effect but is only two points. n=64 is reachable with no
   code changes (it is exactly the current `N<=64` bitset ceiling) and
   gives a concrete, falsifiable prediction to check: a simple 1/n
-  falloff anchored at n=50 predicts a relative gap of about **5.6%**
-  (7.2% x 50/64); anything well outside that -- a gap that has
-  plateaued above zero, or one that has already closed -- would rule
-  out the simple 1/n reading. n=80 would help further but needs the
-  multiword-bitset extension above first.
+  falloff of the *relative* gap, anchored at n=50, predicts a relative
+  gap of about **5.6%** (7.2% x 50/64); anything well outside that --
+  a gap that has plateaued above zero, or one that has already
+  closed -- would rule out the simple 1/n reading. (The same reading
+  predicts ~1.8% at n=200, C&S's own system size.) n=80 would help
+  further but needs the multiword-bitset extension above first.
 
 ## Code availability
 

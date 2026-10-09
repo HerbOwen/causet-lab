@@ -22,7 +22,7 @@ ul, ol { margin-top: 0.3em; }
 </head>
 <body>
 <div class="titleblock"><h1>An open-source multicanonical sampler for 2D causal set quantum gravity: validation and a random-background lattice-gas comparison</h1></div>
-<div class="status">Independent project report, v1 (2026-10-09) &mdash; not peer reviewed</div>
+<div class="status">Independent project report, v1 (2026-10-09) -- not peer reviewed</div>
 <blockquote>
 <p><strong>How to read the citations in this paper.</strong> Every numeric claim below
 is tagged <code>[source @ commit]</code>, naming the exact report file and git
@@ -124,10 +124,17 @@ discreteness", i.e. a randomly sprinkled background) is an open
 question they do not pursue. Section 5 below is this project's own
 attempt at that comparison.</p>
 <h2>2. Models</h2>
-<p><strong>2D orders with the smeared BD action.</strong> The state space is all
-labelled partial orders on N elements (equivalently, N x N transitive
-binary matrices); two elements' relation is updated by a single
-coordinate-swap Monte Carlo move. The smeared 2D action is
+<p><strong>2D orders with the smeared BD action.</strong> A "2D order" on N elements
+is a pair of independent permutations <code>(u, v)</code> of <code>{0, ..., N-1}</code>:
+element <code>i</code> strictly precedes element <code>j</code> iff <code>u[i] &lt; u[j]</code> AND
+<code>v[i] &lt; v[j]</code>. The intersection of two strict total orders is
+automatically transitively closed, so the state space is exactly this
+set of <code>(u, v)</code> pairs, not all labelled partial orders on N elements --
+only those realizable as such an intersection (the standard 2D-order
+representation, e.g. Surya 2012). A Monte Carlo move picks <code>u</code> or <code>v</code>
+at random and swaps two of its entries (a transposition); at beta=0
+this is an unweighted random walk over <code>(u, v)</code> pairs, which samples
+them uniformly. The smeared 2D action is
 <code>S(C,eps) = 4*eps*(N - 2*eps*sum_n N_n*f(n,eps))</code>,
 <code>f(n,eps) = (1-eps)^n*(1 - 2*eps*n/(1-eps) + eps^2*n*(n-1)/(2*(1-eps)^2))</code>,
 matched by direct inspection of the fetched paper against this
@@ -266,21 +273,17 @@ prediction 6.992 +/- 0.627 (leading term alone: 5.533) -- within about
 0.1 formula-standard-deviations, with no bootstrap on the measured
 side for this single run [<code>results/phase4/lattice_gas_2d_report.md @
 0f85d22</code>, Part 5].</p>
-<p><strong>PT vs. MUCA agreement at N=30, eps=0.5.</strong> The original PT scan
-located beta_c = 0.14797 +/- 0.00384 at this (N, eps)
-[<code>results/phase3/mcmc_2d_report.md @ edb9b99</code>] -- <strong>but this specific
-value is flagged in that same report as right-censored</strong> (the largest
-converged beta in that scan, not a confirmed interior maximum; see
-Section 6). The independent WL/MUCA run above located 0.1478 +/- 0.0004
-using a method that locates an interior maximum directly rather than
-scanning outward from a fixed grid. The two agree to within 0.001
-[<code>results/phase3b/muca_calibration_report.md @ 7d648fa</code>]. This is read
-cautiously, as a number consistent with two different sampling methods
-rather than proof of a shared, confirmed beta_c: because the PT value
-was never independently confirmed interior in its own right, the
-agreement cannot rule out the two methods both landing near the same
-right-censoring edge by coincidence, however unlikely that may seem
-given how differently the two methods search the space.</p>
+<p><strong>PT vs. MUCA at N=30, eps=0.5: not independent confirmation.</strong> The
+original PT scan located beta_c = 0.14797 +/- 0.00384 at this (N, eps)
+[<code>results/phase3/mcmc_2d_report.md @ edb9b99</code>], close to the WL/MUCA
+value above (0.1478 +/- 0.0004, agreement to within 0.001
+[<code>results/phase3b/muca_calibration_report.md @ 7d648fa</code>]) -- but the PT
+value is flagged in its own source report as right-censored (the
+largest converged beta in that scan, not a confirmed interior maximum;
+see Section 6), so it cannot serve as an independent check on the
+WL/MUCA result. This project's actual validation of beta_c rests on
+the WL/MUCA-vs-published-formula comparison in the table above, not on
+PT/MUCA agreement.</p>
 <p><strong>Lattice gas 2D: controls and qualitative phase comparison.</strong> beta=0
 (uniformly random fillings) sampled as sub-intervals (since the
 cylinder filling is not itself an Alexandrov interval) give
@@ -492,12 +495,15 @@ on the N&lt;=64 bitset limit (Section 7/8).</p>
 original PT scan's beta_c was, for 7 of 8 tested (N, eps) combinations,
 exactly the largest <em>converged</em> beta in its scan -- i.e. there was no
 converged data confirming the variance actually turns back down past
-the located point. A direct stress test (N=40, deliberately
-re-centering the search grid at 0.6x and 1.6x the formula's
-prediction, both shifts from the original ~0.42x center) found that
-at eps=0.21 the located beta_c relocated to ~7.0 from both directions
--- nowhere near the original 0.70 or the published 0.82 -- while
-eps=0.5 held up (three grid placements agreed within ~25%)
+the located point. The original search grid was itself only centered
+at about 0.42x of the published formula's own prediction, not at the
+prediction itself. A direct stress test (N=40, deliberately
+re-centering the grid independently at 0.6x and 1.6x of that same
+formula prediction -- not relative to the original 0.42x point) found
+that at eps=0.21 the located beta_c relocated to ~7.0 from both of
+those re-centered grids -- nowhere near the original grid's own 0.70
+or the published 0.82 -- while eps=0.5 held up (all three grid
+placements landed within 25% of the prediction)
 [<code>results/phase3/mcmc_2d_report.md @ edb9b99</code>]. Lesson: a beta_c that
 sits at the edge of whatever range was searched is not located; it is
 censored, and should be reported as such until an interior maximum is
@@ -604,10 +610,13 @@ post-hoc check (<code>verify_window_coverage_randombg</code>) confirming nothing
 physically relevant was cut off [<code>causet_lab/mcmc/random_bg.py</code>].</p>
 <h2>7. Limitations</h2>
 <ul>
-<li><strong>Small sizes.</strong> N, n &lt;= 60 throughout (orders PT/MUCA up to N=60;
-  lattice gas and random background up to n=50); the bitset engine's
-  <code>uint64</code>-per-element representation caps every model in this project
-  at N &lt;= 64 without a redesign (see Outlook).</li>
+<li><strong>Small sizes.</strong> N, n &lt;= 60 throughout, but not uniformly: the
+  legacy PT beta-ladder scan (Section 6) reached N=30-60; the WL/MUCA
+  results that replaced it (Section 4) only cover N=30 and N=40 for
+  the orders model, and n=30 and n=50 for the lattice gas and random
+  background (Section 5) -- no WL/MUCA run went past N=40 / n=50. The
+  bitset engine's <code>uint64</code>-per-element representation caps every model
+  in this project at N, n &lt;= 64 without a redesign (see Outlook).</li>
 <li><strong>No cleanly resolved first-order barrier at any size tested.</strong>
   Hysteresis disagreed between random- and layered-start chains for
   6/8 (N, eps) PT combinations, the double-peak histogram signature
@@ -706,9 +715,10 @@ developed with AI assistance (Anthropic's Claude and Claude Code),
 under direction and review from the author(s). This is stated plainly
 rather than left implicit.</p>
 <h2>Appendix: run parameters, timings, hardware</h2>
-<p><strong>Hardware</strong>: single laptop, Intel64 (Model 158, "Skylake"-class),
-4 logical CPUs, Windows 11 (build 10.0.26200). Python 3.13.2, NumPy
-2.3.2, Numba 0.68.0.</p>
+<p><strong>Hardware</strong>: single desktop (HP Pavilion Desktop 590-p0xxx), Intel
+Core i3-8100 @ 3.60GHz, 4 cores / 4 logical processors (no
+hyperthreading), Windows 11 Home (build 10.0.26200). Python 3.13.2,
+NumPy 2.3.2, Numba 0.68.0.</p>
 <p><strong>Per-run timings</strong> (single seed unless noted; WL = Wang-Landau phase,
 MUCA = multicanonical production phase, target 10 round trips
 throughout):</p>

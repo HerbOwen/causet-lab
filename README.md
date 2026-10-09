@@ -6,10 +6,16 @@ for Cunningham & Surya's dimensionally-restricted lattice gas, plus a
 new result comparing that lattice gas on its usual regular background
 against a random (quenched Poisson) background.
 
-**Start here**: [`causet_lab/results/writeup/paper.md`](causet_lab/results/writeup/paper.md)
-(also available as [`paper.html`](causet_lab/results/writeup/paper.html) /
-[`paper.pdf`](causet_lab/results/writeup/paper.pdf)) is the full write-up.
-This README is about running the code, not the physics.
+**Start here**: [`causet_lab/results/writeup/note.md`](causet_lab/results/writeup/note.md)
+(also as [`note.pdf`](causet_lab/results/writeup/note.pdf)) is a 3-4
+page note leading with Cunningham & Surya's own open question
+(arXiv:1908.11647, Sec. 6) and this project's answer to it -- read
+this first. [`full_report.md`](causet_lab/results/writeup/full_report.md)
+(also [`full_report.html`](causet_lab/results/writeup/full_report.html) /
+[`full_report.pdf`](causet_lab/results/writeup/full_report.pdf)) is the
+full write-up: every validation result, pitfall, and limitation, each
+cited to an exact git commit. This README is about running the code,
+not the physics.
 
 ## The headline result, in one paragraph
 
@@ -67,16 +73,17 @@ causet_lab/
   tests/                72 tests; run before trusting anything below.
   results/
     phase2/ .. phase5/  One report per phase, each citing exact git
-                        commits for every number (see paper.md's
+                        commits for every number (see full_report.md's
                         citation convention). phase2/phase3/phase3b
                         also hold that phase's generated PNG plots,
                         saved alongside the report as companion
                         artifacts rather than embedded inline.
-    writeup/            paper.md / .html / .pdf (the full write-up),
-                        email_draft.md.
+    writeup/            note.md / .pdf (3-4 page summary, read first),
+                        full_report.md / .html / .pdf (the full
+                        write-up), email_draft.md.
 scripts/                Rescued, repo-relative driver and diagnostic
   phase3_followup/      scripts that actually produced the numbers in
-  phase3b/              results/*.md and paper.md. Organized by the
+  phase3b/              results/*.md and full_report.md. Organized by the
   phase4/               phase they were used in. See "Reproducing
   phase5/                headline numbers" below.
 data/                   Small (<1MB each) cached result pickles the
@@ -118,9 +125,9 @@ reproduction below, not a substitute for it.
 ## Reproducing headline numbers and figures
 
 Everything below assumes 4 logical CPUs (this project's own hardware;
-see `paper.md`'s Appendix) and is run from the repo root. Wall-clock
+see `full_report.md`'s Appendix) and is run from the repo root. Wall-clock
 figures are *measured* numbers from this project's own runs (cited in
-`paper.md`'s Appendix table), not estimates, except where marked
+`full_report.md`'s Appendix table), not estimates, except where marked
 "not separately timed."
 
 **Fast path (seconds): recompute the Phase 5 analysis from already-run
@@ -134,7 +141,7 @@ python scripts/phase5/phase5_n50_pbetac_check.py  # the double-peak check
                                                    # for all 10 n=50 seeds
 ```
 
-Both run in a few seconds and reproduce the exact numbers in `paper.md`
+Both run in a few seconds and reproduce the exact numbers in `full_report.md`
 Section 5 / the Appendix.
 
 **Full regeneration from scratch**, phase by phase:
@@ -168,12 +175,12 @@ Notes on this table:
   what it did and where it checkpointed; read the docstring at the top
   of each before running.
 - `phase5_rerun_failed_n50.py` (without `_v2`) is kept for the
-  historical record (Section 6 of `paper.md`: it still hit the
+  historical record (Section 6 of `full_report.md`: it still hit the
   kinetic-bottleneck bug) — `_v2` is the one that actually produced
   the committed n=50 numbers.
 - `phase5_diagnose_stall_n50.py`/`_part2.py` and
   `phase5_scan_ln_g_gaps.py`/`verify_stall_guard.py` are the diagnostic
-  scripts that found the two Wang-Landau bugs described in `paper.md`
+  scripts that found the two Wang-Landau bugs described in `full_report.md`
   Section 6; they expect checkpoints that only exist mid-run or after
   a from-scratch regeneration, not from the cached `data/*.pkl` files.
 
@@ -190,11 +197,11 @@ exactly without a multi-hour rerun.
 
 ## Known limitations and open questions
 
-See `paper.md` Sections 7-8 for the full, current list; in short:
+See `full_report.md` Sections 7-8 for the full, current list; in short:
 - **System size**: every model here is capped at `N, n <= 64` by the
   bitset engine (one `uint64` per element). n=64 is reachable with no
   code changes and has a concrete, falsifiable prediction attached
-  (paper.md Section 8: ~5.6% relative beta_c gap); n=80 and beyond need
+  (full_report.md Section 8: ~5.6% relative beta_c gap); n=80 and beyond need
   a multiword-bitset rewrite.
 - **Mechanism**: what actually causes the beta_c shift (only the
   simplest hypothesis — a deeper cold-phase floor — has been ruled
@@ -203,7 +210,7 @@ See `paper.md` Sections 7-8 for the full, current list; in short:
 - **3D/4D**: this project only covers d=2; C&S's own paper and the
   generic causal-set action both extend to higher dimensions.
 - **Methodological**: the n=50 dataset mixes two sampler methods by
-  seed (see paper.md Section 5/7); the n=50 mixing-speed comparison
+  seed (see full_report.md Section 5/7); the n=50 mixing-speed comparison
   rests on partial logs for only 3+2 of the 10 seeds.
 - **First-order order parameter**: no double-peak `P_beta_c(S)`
   signature was found at any size, epsilon, or background tested in

@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below."
+title: "causet_lab: an open-source multicanonical sampler for 2D causal set quantum gravity"
+type: software
+version: "1.0.0"
+date-released: "2026-10-09"
+license: MIT
+authors:
+  - family-names: "TODO-fill-in-before-publishing"
+    given-names: "TODO-fill-in-before-publishing"
+    # email: optional -- add only if you want it public
+repository-code: "TODO-fill-in-once-the-repository-has-a-public-URL"
+abstract: >
+  An open-source Wang-Landau/multicanonical (WL/MUCA) sampler for
+  two-dimensional causal set quantum gravity, validated against the
+  Glaser-O'Connor-Surya finite-size-scaling formula and against
+  Cunningham & Surya's dimensionally-restricted lattice gas, plus a new
+  random-background (quenched Poisson) variant of that lattice gas
+  comparing it against the regular-lattice original at n=30 and n=50.
+  See results/writeup/paper.md for the full write-up.
+preferred-citation:
+  type: report
+  title: "An open-source multicanonical sampler for 2D causal set quantum gravity: validation and a random-background lattice-gas comparison"
+  authors:
+    - family-names: "TODO-fill-in-before-publishing"
+      given-names: "TODO-fill-in-before-publishing"
+  date-released: "2026-10-09"
+  notes: "Independent project report, v1 -- not peer reviewed. See results/writeup/paper.md."

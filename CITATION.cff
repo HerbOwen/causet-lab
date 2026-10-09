@@ -9,7 +9,7 @@ authors:
   - family-names: "Owenby"
     given-names: "Herb"
     # email: optional -- add only if you want it public
-repository-code: "TODO-fill-in-once-the-repository-has-a-public-URL"
+repository-code: "https://github.com/HerbOwen/causet-lab"
 abstract: >
   An open-source Wang-Landau/multicanonical (WL/MUCA) sampler for
   two-dimensional causal set quantum gravity, validated against the

@@ -692,11 +692,11 @@ physically relevant was cut off [`causet_lab/mcmc/random_bg.py`].
 ## Code availability
 
 All code, tests, scripts, result data, and reports cited in this paper
-live in a single repository (see `README.md` at the repository root
-for the folder map, installation, and reproduction instructions for
-every number and figure above). A public URL had not been assigned as
-of this writing; the author is responsible for adding it here once the
-repository is published -- see the project README's by-hand checklist.
+live in a single repository:
+[github.com/HerbOwen/causet-lab](https://github.com/HerbOwen/causet-lab).
+See `README.md` at the repository root for the folder map,
+installation, and reproduction instructions for every number and
+figure above.
 
 ## Acknowledgments
 

@@ -150,5 +150,6 @@ story (the order model checked against the published finite-size-
 scaling formula, the lattice gas checked against C&S's own quoted
 numbers), every methodological pitfall found and fixed along the way,
 and exact commit-level citations for every number in this note. The
-code, tests, and scripts to reproduce any of it are in the same
-repository; see `README.md` at the repository root.
+code, tests, and scripts to reproduce any of it are at
+[github.com/HerbOwen/causet-lab](https://github.com/HerbOwen/causet-lab);
+see `README.md` there for the folder map and reproduction instructions.

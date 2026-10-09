@@ -32,6 +32,7 @@ from .muca import (
     N_BINS_INITIAL, RANGE_MARGIN_FRAC, PROGRESS_EVERY_S, F_INITIAL, F_FINAL,
     FLATNESS_THRESHOLD, WIDEN_BINS, EDGE_HIT_FRACTION_TRIGGER, STALL_SECONDS,
     MUCA_MEASURE_EVERY, HIDDEN_BARRIER_RATIO_THRESHOLD, _widen,
+    check_ln_g_anomalies,
 )
 
 ALPHA_DEFAULT = 4
@@ -282,6 +283,10 @@ def run_wang_landau_lattice(n, eps, alpha=ALPHA_DEFAULT, seed=0, checkpoint_path
                   f"visited={n_visited}/{n_bins} bin_idx={bin_idx} "
                   f"edge_hits_total={edge_hits_total} ({time.time()-t0:.1f}s)", flush=True)
             last_progress = time.time()
+            for bin_a, bin_b, step in check_ln_g_anomalies(ln_g, ever_visited):
+                print(f"[lattice-wl] {label} WARNING: anomalous ln_g step at bins "
+                      f"{bin_a}->{bin_b}: {step:.2f} (ln_g={ln_g[bin_a]:.2f} -> {ln_g[bin_b]:.2f}) "
+                      f"-- likely trap risk ({time.time()-t0:.1f}s)", flush=True)
 
         if edge_hits > EDGE_HIT_FRACTION_TRIGGER * chunk_moves:
             side = "low" if bin_idx < n_bins // 2 else "high"
@@ -346,6 +351,7 @@ def run_wang_landau_lattice(n, eps, alpha=ALPHA_DEFAULT, seed=0, checkpoint_path
         "elapsed": time.time() - t0,
         "L": L, "future": future, "past": past, "counts": counts, "rng_state": rng_state,
         "bin_idx": bin_idx, "ever_visited": ever_visited, "n_reachable_bins": int(ever_visited.sum()),
+        "ln_g_anomalies": check_ln_g_anomalies(ln_g, ever_visited),
     }
 
 

@@ -21,12 +21,17 @@ hot (beta=0) and cold (deep annealed high-beta) phases, with margin,
 rather than assumed -- see estimate_initial_bin_range. If the WL walk
 hits an edge bin often (bin_index returning -1 in muca_core.py), the
 range is widened and the run resumes from its own in-memory state
-(not a fresh restart): new edge bins are seeded with the nearest
-existing bin's current ln_g (flat extrapolation), not zero, since
-starting a fresh bin at ln_g=0 next to bins that have already
-accumulated a large ln_g would make the new bin look spuriously
-under-visited and pull the walk into it -- this is standard WL
-practice, not a detail that can be skipped.
+(not a fresh restart): new edge bins are seeded by linearly
+extrapolating the locally-observed ln_g slope (direction- and
+magnitude-clamped so entropy never appears to increase into a tail --
+see _widen), not zero and not a flat repeat of the edge value; a flat
+repeat still leaves the FAR edge of the new block free to drift an
+arbitrary amount from its neighbor under differential visitation,
+which has been observed in practice to trap the walker for a long
+time once it wanders there. check_ln_g_anomalies is a cheap runtime
+guard for exactly that signature (an adjacent ever-visited ln_g step
+far larger than its neighbors), independent of whether widening is
+the cause.
 """
 from __future__ import annotations
 
@@ -93,21 +98,94 @@ def estimate_initial_bin_range(N, eps, seed=0):
     return s_lo - margin, s_hi + margin
 
 
+WIDEN_SLOPE_WINDOW = 10  # bins used to measure the local ln_g slope for extrapolation
+
+
 def _widen(ln_g, H, bin_lo, bin_width, n_bins, side, n_new=WIDEN_BINS):
+    """Grow the histogram by n_new bins on the given side.
+
+    New bins are seeded by LINEARLY EXTRAPOLATING the locally-observed
+    ln_g slope near the edge, not a flat repeat of the edge value. A
+    flat repeat only matches the immediate neighbor; bins further into
+    the new block then sit on an artificial plateau that doesn't track
+    the true (generally still-decaying) density of states, and once the
+    walker reaches the FAR edge of that plateau, differential
+    visitation can open an arbitrarily large, unphysical gap there --
+    confirmed directly: an n=50 random-background run produced a
+    66,000+ ln_g cliff exactly at such a block's far edge, trapping the
+    walker.
+
+    The extrapolation is clipped two ways, both required since the
+    local slope is itself noisy (measured from a handful of bins):
+    (1) direction -- new bins must never exceed the edge bin's own
+    ln_g (ln_g only ever decreases moving further into a tail; a noisy
+    local slope pointing the "wrong" way is clamped to flat rather than
+    extrapolated into an unphysical increase), and (2) magnitude -- the
+    per-bin drop used is capped at the largest single consecutive step
+    actually observed in the edge window, not the averaged slope, so
+    one noisy small window can't produce a steep, compounding plunge
+    over all n_new bins.
+    """
+    k = max(0, min(WIDEN_SLOPE_WINDOW, n_bins - 1))
     if side == "low":
+        window = ln_g[:k + 1]
+        steps = np.diff(window)  # positive steps = ln_g rising toward the bulk (normal)
+        avg_slope = float(steps.mean()) if steps.size else 0.0
+        max_abs_step = float(np.max(np.abs(steps))) if steps.size else 0.0
+        per_bin_drop = min(max(avg_slope, 0.0), max_abs_step)
+        offsets = np.arange(n_new, 0, -1, dtype=np.float64)
         new_ln_g = np.empty(n_bins + n_new, dtype=np.float64)
+        new_ln_g[:n_new] = ln_g[0] - per_bin_drop * offsets
         new_ln_g[n_new:] = ln_g
-        new_ln_g[:n_new] = ln_g[0]  # flat extrapolation, not zero -- see module docstring
         new_H = np.zeros(n_bins + n_new, dtype=np.int64)
         new_H[n_new:] = H
         return new_ln_g, new_H, bin_lo - n_new * bin_width, n_bins + n_new
     else:
+        window = ln_g[-(k + 1):]
+        steps = np.diff(window)  # negative steps = ln_g falling away from the bulk (normal)
+        avg_slope = float(steps.mean()) if steps.size else 0.0
+        max_abs_step = float(np.max(np.abs(steps))) if steps.size else 0.0
+        per_bin_drop = min(max(-avg_slope, 0.0), max_abs_step)
+        offsets = np.arange(1, n_new + 1, dtype=np.float64)
         new_ln_g = np.empty(n_bins + n_new, dtype=np.float64)
         new_ln_g[:n_bins] = ln_g
-        new_ln_g[n_bins:] = ln_g[-1]
+        new_ln_g[n_bins:] = ln_g[-1] - per_bin_drop * offsets
         new_H = np.zeros(n_bins + n_new, dtype=np.int64)
         new_H[:n_bins] = H
         return new_ln_g, new_H, bin_lo, n_bins + n_new
+
+
+LN_G_STEP_ANOMALY_THRESHOLD = 100.0  # healthy adjacent-bin steps observed are ~6-11;
+# for reference, ln(m!/(m-n)!) itself (the combinatorial ceiling on how
+# much ln(g) can differ between ANY two bins at all, let alone
+# neighbors) is a few hundred at the n/m scales used in this project --
+# so even 100 is already a generous multiple of what a genuinely smooth,
+# converged density of states should ever show between neighboring bins.
+
+
+def check_ln_g_anomalies(ln_g, ever_visited, threshold=LN_G_STEP_ANOMALY_THRESHOLD):
+    """Flag any adjacent-ever-visited-bin ln_g step whose magnitude
+    exceeds `threshold`. A converged (or converging) density of states
+    varies smoothly between neighboring bins; a step this large is the
+    direct, cheap-to-check signature of the kind of artificial cliff
+    that trapped a WL walker for 800+s in this project (observed steps
+    of 101, 66767 and 46967 in three failed n=50 runs, vs. 6-11 for
+    every healthy run checked). Returns
+    a list of (bin_a, bin_b, step) for every anomalous adjacent pair
+    found, in increasing bin order; empty if none.
+    """
+    idx = np.flatnonzero(ever_visited)
+    if idx.size < 2:
+        return []
+    span = np.arange(idx[0], idx[-1] + 1)
+    visited_in_span = ever_visited[span]
+    steps = np.diff(ln_g[span])
+    both_visited = visited_in_span[:-1] & visited_in_span[1:]
+    anomalies = []
+    for i in range(steps.size):
+        if both_visited[i] and abs(steps[i]) > threshold:
+            anomalies.append((int(span[i]), int(span[i + 1]), float(steps[i])))
+    return anomalies
 
 
 def run_wang_landau(N, eps, seed=0, checkpoint_path=None, checkpoint_every_s=60,
@@ -190,6 +268,10 @@ def run_wang_landau(N, eps, seed=0, checkpoint_path=None, checkpoint_every_s=60,
                   f"visited={n_visited}/{n_bins} bin_idx={bin_idx} "
                   f"edge_hits_total={edge_hits_total} ({time.time()-t0:.1f}s)", flush=True)
             last_progress = time.time()
+            for bin_a, bin_b, step in check_ln_g_anomalies(ln_g, ever_visited):
+                print(f"[wl] {label} WARNING: anomalous ln_g step at bins "
+                      f"{bin_a}->{bin_b}: {step:.2f} (ln_g={ln_g[bin_a]:.2f} -> {ln_g[bin_b]:.2f}) "
+                      f"-- likely trap risk ({time.time()-t0:.1f}s)", flush=True)
 
         if edge_hits > EDGE_HIT_FRACTION_TRIGGER * chunk_moves:
             side = "low" if bin_idx < n_bins // 2 else "high"
@@ -256,6 +338,7 @@ def run_wang_landau(N, eps, seed=0, checkpoint_path=None, checkpoint_every_s=60,
         "elapsed": time.time() - t0,
         "u": u, "v": v, "future": future, "past": past, "counts": counts, "rng_state": rng_state,
         "bin_idx": bin_idx, "ever_visited": ever_visited, "n_reachable_bins": int(ever_visited.sum()),
+        "ln_g_anomalies": check_ln_g_anomalies(ln_g, ever_visited),
     }
 
 
@@ -669,7 +752,11 @@ def reweight_mean_var_S(ln_g, H_muca, bin_lo, bin_width, n_bins, beta):
     return mean_S, var_S
 
 
-def locate_beta_c_variance_peak(ln_g, H_muca, bin_lo, bin_width, n_bins, beta_lo, beta_hi, n_scan=400):
+MIN_H_MUCA_COVERAGE_FRAC = 0.3
+
+
+def locate_beta_c_variance_peak(ln_g, H_muca, bin_lo, bin_width, n_bins, beta_lo, beta_hi, n_scan=400,
+                                 min_coverage_frac=MIN_H_MUCA_COVERAGE_FRAC):
     """beta_c as the location of the maximum of the specific heat /
     action variance Var(S)(beta) -- this is the definition Glaser,
     O'Connor & Surya (2018) actually use to fit their published
@@ -684,7 +771,17 @@ def locate_beta_c_variance_peak(ln_g, H_muca, bin_lo, bin_width, n_bins, beta_lo
     Returns the scanned grid and variance curve too (not just the
     peak) since checking the peak isn't right at a scan edge is part
     of trusting the result -- a true interior maximum needs the
-    variance to be lower on *both* sides of beta_lo/beta_hi.
+    variance to be lower on *both* sides of beta_lo/beta_hi. is_interior
+    catches a flagrant edge result but NOT a MUCA run whose production
+    histogram H_muca only ever covered a narrow sliver of the explored
+    S range (e.g. zero round trips): the reweighted variance curve over
+    such a narrow, noise-dominated support can still produce a
+    spurious-looking INTERIOR maximum that is_interior alone cannot
+    catch (confirmed directly: an n=50 run with H_muca support spanning
+    only a fraction of its WL's explored range located an
+    interior-flagged beta_c that was not reproducible). h_muca_coverage_frac
+    (the span between the first and last H_muca>0 bin, as a fraction of
+    n_bins) and the combined reliable flag guard against exactly this.
     """
     betas = np.linspace(beta_lo, beta_hi, n_scan)
     variances = np.empty(n_scan)
@@ -704,10 +801,21 @@ def locate_beta_c_variance_peak(ln_g, H_muca, bin_lo, bin_width, n_bins, beta_lo
         if denom != 0:
             step = betas[i_max + 1] - betas[i_max]
             beta_c = beta_c + 0.5 * (y0 - y2) / denom * step
+
+    valid = H_muca > 0
+    if valid.any():
+        valid_idx = np.flatnonzero(valid)
+        coverage_span = int(valid_idx[-1] - valid_idx[0] + 1)
+    else:
+        coverage_span = 0
+    coverage_frac = coverage_span / n_bins
+    reliable = bool(is_interior and coverage_frac >= min_coverage_frac)
     return {
         "beta_c": beta_c, "var_max": float(variances[i_max]),
         "is_interior": is_interior,
         "betas": betas, "variances": variances,
+        "h_muca_n_valid_bins": int(valid.sum()), "h_muca_coverage_span": coverage_span,
+        "h_muca_coverage_frac": coverage_frac, "reliable": reliable,
     }
 
 

@@ -31,21 +31,32 @@ gas (a quenched Poisson sprinkling of background sites in place of
 C&S's regular lattice) to address an open question C&S raise but do
 not pursue: whether their regular background biases the result. At
 n=30, five independent background realizations locate a critical
-coupling about 13% below a matched-pipeline, 5-chain-seed regular-
+coupling about 12% below a matched-pipeline, 5-chain-seed regular-
 lattice ensemble (z=51.8 -- not a single-seed artifact on either
 side), while the qualitative phase structure and the hot phase's
 detailed statistics are close to background-independent. A direct
 mechanism check rules out the simplest explanation (the random
 background reaching a deeper cold-phase action floor); the real
-mechanism is left as an open question.
+mechanism is left as an open question. At n=50, the gap survives
+(z=13.7) but shrinks to about 7%, and the cold-phase observable
+difference most visible at n=30 nearly closes -- consistent with a
+finite-size effect fading with system size, from two data points.
+Getting a trustworthy n=50 result required finding and fixing two
+further sampler bugs invisible at n=30: an adaptive-histogram-widening
+step that filled new bins with a flat value instead of a gradient
+(creating an unphysical "cliff" the walker could get trapped behind),
+and -- after fixing that -- a genuine kinetically-isolated bin that no
+amount of reweighting could repair, fixed by switching to a fixed,
+pilot-quantile-based sampling window with no adaptive widening at all.
 We report several methodological pitfalls found and fixed along the
 way -- a beta_c definition mismatch, noise mistaken for a first-order
-double peak (twice, in two different ways), and a units bug in the
-random-background model's causal relation -- as cautionary detail for
-others building similar samplers.
+double peak (twice, in two different ways), a units bug in the
+random-background model's causal relation, and the two Wang-Landau
+histogram-widening bugs above -- as cautionary detail for others
+building similar samplers.
 Limitations include small system sizes (N, n <= 60), a first-order
-barrier that is not cleanly resolved at any size tested, and (so far)
-single- or few-seed statistics for most results.
+barrier that is not cleanly resolved at any size tested, and only two
+system sizes checked for the background-dependence finding.
 
 ## 1. Introduction
 
@@ -276,8 +287,7 @@ Phase 4 regular-lattice run, with the beta_c-location scan bracket
 deliberately widened (0.01x to 30x the regular lattice's own located
 beta_c, used only as a pilot-range anchor, not an assumption the two
 models share a beta_c) since there is no a priori reason quenched
-disorder should leave beta_c unchanged. Stage 2 (n=50) is a one-line
-change to the driver's size constant, not attempted yet
+disorder should leave beta_c unchanged
 [`results/phase5/random_background_report.md @ 3ae1ad5`, this section].
 
 **Equivalence check**: placing the background exactly at the regular
@@ -358,15 +368,59 @@ have triggered the *same* spurious double peak had anyone checked it
 at the time; nobody had. **No confirmed first-order signature at any
 realization or model examined in this project.**
 
-**Plain answer**: at n=30, the transition's *location* depends on the
-background being a regular grid (a real ~13% shift, confirmed against
+**Plain answer (n=30)**: the transition's *location* depends on the
+background being a regular grid (a real ~12% shift, confirmed against
 a matched 5-seed regular-lattice ensemble, not a single-seed artifact,
-and not explained by the simplest mechanism checked), well outside the
+and not explained by the simplest mechanism checked, well outside the
 cross-realization spread); the transition's *qualitative character*
 does not (manifold-like/ordered phases persist on both, the hot phase
 is quantitatively close to background-independent, neither background
 shows a resolved double peak). Reported as found, not rounded toward
 either "no effect" or "a different transition."
+
+**Stage 2: n=50.** Getting a trustworthy result here took longer than
+expected -- two further sampler bugs, both general lessons for this
+WL pipeline, are reported in full in Section 6. In brief: (1) the
+histogram-widening step filled new bins with a flat repeated value
+instead of a gradient, which could open an unphysical `ln_g` cliff at
+the far edge of a widened block under ordinary differential
+visitation (found directly: three of the first ten n=50 runs produced
+adjacent-bin `ln_g` steps of 101-66,767, vs. 6-11 for every healthy
+run, each leaving its MUCA production stuck at zero round trips after
+300,000,000 moves); (2) after fixing that, one seed hit the *same*
+failure signature again, from a genuinely kinetically-isolated bin --
+entropically ordinary, but reachable by almost no accepted
+single-site move from the bulk -- which no amount of smarter `ln_g`
+seeding can fix, since the problem is reachability, not weight. Fixed
+by replacing adaptive widening with a *fixed* sampling window set from
+pilot quantiles (hot end: 99.99th percentile of a beta=0 sample; cold
+end: 0.01st percentile of a sample annealed to 3.5x the beta_c
+anchor), verified post-hoc to carry negligible reweighted probability
+mass (<1e-3, typically <1e-4) at either edge for beta in [0, 2*beta_c]
+on every production run.
+
+With that fixed (and a direct two-seed check confirming the
+methodology change does not alter beta_c for seeds that were already
+clean -- differences of 0.002 and 0.008, well inside each ensemble's
+own seed spread), n=50 gives beta_c = 5.959 +/- 0.033 (SEM) for the
+random background vs. 6.419 +/- 0.005 (SEM) for the regular lattice.
+**Gap = 0.460, z = 13.67** -- still overwhelmingly significant, but
+the *relative* shift is **7.2%, down from n=30's 12.4%**. The
+cold-phase ordering-fraction gap that was clearly present at n=30
+(0.583 vs. 0.646) has nearly closed at n=50 (0.661 vs. 0.660); the
+cold-phase MM dimension converges too (2.73/2.87 -> 3.60/3.60). The
+hot phase remains close to background-independent, and all 10 n=50
+P_beta_c(S) curves (5 per background) are single broad humps, no
+double-peak signature at either background
+[`results/phase5/random_background_report.md @ [TBD: this
+session's commit]`, Stage 2 section].
+
+**Read plainly**: the background-dependence of the transition looks
+like a finite-size effect that fades with system size, not a
+permanent discrepancy between the two models -- though two data
+points (n=30, n=50) cannot by themselves distinguish that from a
+slower-than-1/n falloff that plateaus above zero; a third size would
+be needed, currently blocked on the N<=64 bitset limit (Section 7).
 
 ## 6. Pitfalls and lessons
 
@@ -456,6 +510,43 @@ on it at the time -- nobody had, so there was no committed claim to
 correct, but it confirms the bug was general, not specific to
 disorder.
 
+**A histogram-widening step that filled new bins flat instead of with
+a gradient.** When Wang-Landau's bin range needs to grow (edge-hit
+pressure), the new block of bins was seeded with a single repeated
+value (the old edge bin's `ln_g`) rather than a gradient continuing
+the locally observed trend. The bin immediately adjacent to the old
+edge matched its neighbor fine, but bins further into that
+artificially flat block could drift apart from each other under
+ordinary differential visitation; once the walker reached the *far*
+edge of that drift, a large, unphysical `ln_g` cliff could open there.
+Found directly at n=50: three of the first ten runs produced
+adjacent-bin `ln_g` steps of 101-66,767 (vs. 6-11 for every healthy
+run), each exactly at a widened block's far edge, each leaving MUCA
+production stuck at zero round trips after the full 300-million-move
+cap. Fixed by extrapolating the locally-observed slope instead of
+repeating the edge value, clamped so the extrapolation can never
+exceed the edge value (direction) or exceed the single largest step
+actually observed nearby (magnitude) [`causet_lab/mcmc/muca.py`,
+`_widen`, with regression tests in `test_mcmc.py`].
+
+**A kinetically-isolated bin that no amount of reweighting can fix.**
+After the fix above, the same failure signature recurred on one seed
+-- a bin reached only well into the run, not created by any widening
+event. Direct inspection (resuming the exact frozen walker state and
+tabulating where proposed moves actually land) found the bin's nearby
+entropy was unremarkable, but almost no single-site relocation from
+the bulk landed there with any acceptable probability: it was
+*kinetically*, not thermodynamically, hard to reach. Wang-Landau's
+histogram-flattening heuristic reads sustained under-visitation as
+"needs more weight," which only helps when the cause is low entropy
+-- it cannot fix a reachability problem, since the walker still has
+to get there via an accepted move regardless of that bin's weight.
+Fixed architecturally, not by better seeding: the sampling window is
+now fixed from pilot quantiles rather than left free to adapt, so the
+walker is kept away from the pathological region entirely, with a
+post-hoc check (`verify_window_coverage_randombg`) confirming nothing
+physically relevant was cut off [`causet_lab/mcmc/random_bg.py`].
+
 ## 7. Limitations
 
 - **Small sizes.** N, n <= 60 throughout (orders PT/MUCA up to N=60;
@@ -476,7 +567,16 @@ disorder.
   choice.
 - **Few seeds.** Most orders-model and lattice-gas results are single-
   seed; Phase 5 (Section 5) is this project's first result with an
-  explicit multi-seed spread, and only at one size so far.
+  explicit multi-seed spread, now at two sizes (n=30, n=50). The n=50
+  dataset mixes two sampler methods by seed (5 of 10 re-run under a
+  fixed-window method after two bugs were found, 5 kept from the
+  original run) -- justified by a direct two-seed consistency check,
+  not by assumption, but a fully single-method n=50 dataset was not
+  run.
+- **Only two system sizes for the background-dependence finding.**
+  The observed gap shrinks from 12.4% (n=30) to 7.2% (n=50), consistent
+  with a finite-size effect, but two points cannot distinguish that
+  from a slower falloff that plateaus above zero.
 - **Euclideanized weights throughout.** Every model here samples
   `exp(-beta*S_BD)` as a real, non-oscillatory Boltzmann weight -- a
   standard device in this literature, not a Lorentzian quantum
@@ -507,6 +607,14 @@ disorder.
   deliberate N=30/40/50/60 (or n=30/50/80, once multiword bitsets
   exist) ladder, timed consistently, would let a real extrapolated
   cost curve replace this project's current ad hoc per-size reporting.
+  Phase 5's n=30/n=50 pair is a start for the random-background model
+  specifically, but used two different sampler methods by seed
+  (Section 6/7), so it is not yet the clean, consistently-timed ladder
+  this item calls for.
+- **A third system size for the background-dependence gap.** The
+  observed shrinkage (12.4% -> 7.2%) is consistent with a finite-size
+  effect but is only two points; n=80 would help, and needs the
+  multiword-bitset extension above first.
 
 ## Code availability
 
@@ -538,6 +646,8 @@ throughout):
 | Lattice gas | 30 | 0.1 | 1613.7s | 948.2s | 2561.8s (~42.7 min) | same |
 | Random background (5 realizations) | 30 | 0.1 | 387.3-1435.5s | 141.1-275.6s | 1623.9s total (all 5, 4 cores) | `results/phase5/random_background_report.md @ 3ae1ad5` |
 | Regular lattice, matched pipeline (5 chain seeds) | 30 | 0.1 | 1345.0-5704.3s | 511.1-1057.9s | 6659.9s total (all 5, 4 cores) | same report, matched-pipeline rerun section |
+| Random background (5 realizations, mixed method) | 50 | 0.1 | 1180.3-2745.1s | 245.6-4178.4s | 17590.5s total (all 5, 4 cores) | `results/phase5/random_background_report.md @ [TBD: this session's commit]`, Stage 2 section |
+| Regular lattice via rbg pipeline (5 chain seeds, mixed method) | 50 | 0.1 | 1291.7-2765.9s | 281.5-1398.7s | 12194.7s total (all 5, 4 cores) | same, Stage 2 section |
 
 **Multiprocessing**: Phase 5 stage 1 runs 5 independent realizations
 via `ProcessPoolExecutor(max_workers=4)` -- 4 concurrent, the 5th
@@ -545,25 +655,26 @@ queued behind whichever finishes first. The matched-pipeline regular-
 lattice rerun took **4x longer in total** than the random-background
 ensemble under identical settings -- see Section 5's mechanism-check
 discussion and Section 6 (not fully explained; flagged as an open
-observation, not a settled finding).
+observation, not a settled finding). The n=50 totals are **not** a
+clean replay of that comparison: each model's 5-seed total mixes two
+sampler methods (some seeds re-run under a fixed-window method after
+two bugs were found, the rest kept from the original adaptive-widening
+run -- the exact split differs slightly by model; see Section 6/7),
+so the n=50 row is not used to re-test the n=30 mixing asymmetry.
 
 ---
 
 ## Summary of [TBD] items and claims needing follow-up
 
-Resolved since the previous draft (all now cited to
-`results/phase5/random_background_report.md @ 3ae1ad5` unless noted):
-the random-vs-regular-background finding (Abstract, Section 5); all
-per-realization beta_c values and cross-realization spread; the
-matched-pipeline 5-chain-seed regular-lattice rerun and the z=51.8 gap
-significance; the mechanism check (floor/hot-mean-action comparison,
-hypothesis not confirmed); hot/cold-phase observables; the P_beta_c(S)
-shape check and the upstreamed `_peak_diagnostics` mass-filter fix
-(`causet_lab/mcmc/muca.py`, same commit) with its regression tests and
-its re-check against Phase 3b/4's committed conclusions; the Section 5
-control numbers (now committed, no longer `[uncommitted]`); the
-Appendix table's random-background and matched-pipeline-regular-
-lattice rows.
+Resolved since the previous draft: the n=50 stage-2 result (Abstract,
+Section 5) -- beta_c gap shrinks from 12.4% (n=30) to 7.2% (n=50,
+z=13.67), cold-phase observable gap nearly closes, no double-peak
+signature at any of the 10 n=50 seeds; the two further sampler bugs
+found while getting that result, fixed upstream with regression tests
+(Section 6); the Appendix table's n=50 timing rows. All cited to
+`results/phase5/random_background_report.md @ [TBD: this session's
+commit -- fill in after committing muca.py, random_bg.py,
+lattice_gas.py, test_mcmc.py and both report files together]`.
 
 Still open:
 
@@ -587,9 +698,24 @@ Still open:
    citations (Wang & Landau 2001; parallel tempering's standard
    references) if the published version needs them -- deliberately
    left out here rather than guessed.
-5. **New from this round**: the mechanism behind the beta_c shift
-   (Section 5) and the regular lattice's 4x-slower mixing under this
-   pipeline (Section 5/6) are both reported as genuine open questions,
-   not just formatting placeholders -- flagging explicitly so a
-   reviewer doesn't mistake "ruled out the obvious explanation" for
-   "found the real one."
+5. **The mechanism behind the original n=30 beta_c shift** (Section 5)
+   and **the n=30 regular lattice's 4x-slower mixing under that
+   pipeline** (Section 5/6) remain genuine open questions from the
+   previous round, not resolved by the n=50 work -- the n=50 mixing
+   data is confounded by the sampler-method mix (item 6) and was not
+   used to re-test the 4x finding either way.
+6. **The n=50 dataset mixes two sampler methods by seed** (Section 5
+   /6/7): justified by a direct two-seed consistency check (0.002 and
+   0.008 differences, well inside each ensemble's own spread), not by
+   assumption, but a reviewer wanting a methodologically uniform n=50
+   dataset would need all 10 seeds re-run under the fixed-window
+   method -- not done here since the two checked seeds already showed
+   no material difference.
+7. **n=50's moves-per-stage/moves-per-round-trip mixing figures rest
+   on only 3 (random) and 2 (regular) seeds** -- the other seeds'
+   per-stage logs were not retained -- too few for a confident
+   per-move mixing-speed claim between backgrounds at n=50.
+8. **Only two system sizes (n=30, n=50)** support the "finite-size
+   effect fading with n" reading of the beta_c gap; a third size
+   (blocked on the N<=64 bitset limit, Section 7/8) would be needed
+   to fit the falloff itself.

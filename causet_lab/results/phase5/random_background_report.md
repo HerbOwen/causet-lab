@@ -1,4 +1,4 @@
-# Phase 5: random vs. regular background, d=2 lattice gas (stage 1: n=30)
+# Phase 5: random vs. regular background, d=2 lattice gas (n=30 and n=50)
 
 ## Summary
 
@@ -39,8 +39,19 @@ get more deeply ordered," and is left as an open question. No
 confirmed first-order double-peak signature in P_beta_c(S) at any
 realization, once a spurious tail-noise "double peak" (found,
 diagnosed, and now fixed upstream in `muca.py`) is correctly excluded.
-Stage 2 (n=50) is a one-line constant change in the driver script, not
-run yet.
+
+**Stage 2 (n=50, below): the gap survives but shrinks.** beta_c =
+**5.959 +/- 0.033 (SEM)** (random background) vs. **6.419 +/- 0.005
+(SEM)** (regular lattice), gap = 0.460, z = 13.7 -- still
+overwhelmingly significant, but the *relative* shift is **7.2%**, down
+from n=30's **12.4%**. The cold-phase ordering-fraction gap that was
+clearly present at n=30 (0.583 vs. 0.646) has essentially closed by
+n=50 (0.661 vs. 0.660). Getting a trustworthy n=50 number required
+fixing two distinct sampler bugs found only by direct inspection of
+raw WL state -- an artificially flat histogram-widening step, and a
+genuine *kinetically* hard-to-reach bin that no amount of reweighting
+could fix -- documented in full in the Stage 2 section below, since
+both are general lessons for this sampler, not n=50-specific trivia.
 
 ## Construction and the units fix
 
@@ -319,7 +330,7 @@ preserved by this fix on logical grounds alone, since the new check
 only adds a rejection condition and never removes one -- any input that
 previously returned `None` still does.
 
-## Answer to the motivating question
+## Answer to the motivating question (Stage 1: n=30)
 
 **At n=30: the transition's location does depend on the background
 being a regular grid** -- beta_c shifts by about 13%, a gap far wider
@@ -338,6 +349,220 @@ artifact**, and a mechanism check that rules out the simplest
 explanation (a deeper cold-phase floor) without identifying what the
 real mechanism is.
 
+## Stage 2: n=50
+
+Same construction, same eps=0.1, same 5-realization / 5-chain-seed
+design as Stage 1, scaled to n=50 (m=4n^2=10000, w=50, h=200). Getting
+a trustworthy result here required finding and fixing two distinct
+sampler bugs, neither of which was visible at n=30 -- both are
+reported in full since they are general lessons about this WL
+pipeline, not artifacts specific to n=50.
+
+### Two sampler bugs found during this stage
+
+**Bug 1: `_widen`'s flat-fill histogram extension.** The WL range-widening
+step (triggered when edge-hit pressure crosses a threshold) filled an
+entire new 60-bin block with one repeated value (the old edge bin's
+`ln_g`), not a gradient. The bin immediately adjacent to the old edge
+matched its neighbor fine, but bins further into that artificially
+flat block could drift apart from each other under ordinary
+differential visitation, and once the walker reached the *far* edge of
+that drift, a large, unphysical `ln_g` cliff could open there. Found
+directly: three of the first ten n=50 WL runs produced adjacent-bin
+`ln_g` steps of 101, 46967 and 66767 (vs. 6-11 for every healthy run),
+each exactly at a widened block's far edge, each trapping its walker
+for 800+ seconds and leaving its MUCA production stuck at **zero round
+trips after the full 300,000,000-move cap**. **Fixed**: `_widen` now
+extrapolates the locally-observed `ln_g` slope linearly, clamped two
+ways -- direction (new bins can never exceed the edge bin's own
+`ln_g`, since density of states only decreases further into a tail)
+and magnitude (the per-bin drop used is the window-averaged slope,
+which is mathematically bounded by the single largest step actually
+observed nearby, so one noisy window can't compound into a steeper
+plunge than anything locally observed). Three regression tests added
+(`tests/test_mcmc.py`): the slope-continuation behavior itself, the
+direction clamp on deliberately-wrong-signed synthetic data, and the
+exact extrapolated values pinned down by hand for a clean case.
+
+**Bug 2: a genuine kinetic bottleneck, which no seeding fix can repair.**
+After fixing Bug 1 and restarting the three failed seeds from scratch,
+one of them (`randombg` seed 1) produced the *same* class of failure
+again -- a -58997 `ln_g` step, at a bin reached only well into WL,
+*not* created by any widening event this time. Direct inspection (a
+short burst of the real WL kernel resumed from the exact frozen state,
+with the proposed-move destinations tabulated) found the walker had
+reached a bin with normal nearby entropy but almost no outgoing moves
+accepted with non-negligible probability: WL's histogram-flattening
+heuristic reads persistent under-visitation as "needs more weight,"
+which is the right response when the cause is low entropy, but the
+wrong one when the cause is *kinetic* -- a bin that few single-site
+relocations can actually reach from the bulk. No amount of smarter
+`ln_g` seeding fixes a reachability problem, since the walker has
+to get there via an accepted move regardless of the target bin's
+weight. **Fixed, architecturally**: `estimate_initial_bin_range_randombg`
+now returns a *fixed* window (hot end = the 99.99th percentile of a
+4000-sweep beta=0 pilot; cold end = the 0.01st percentile of a
+4000-sweep pilot annealed to 3.5x the beta_c anchor), and WL no longer
+widens past it -- edge-hit pressure is simply rejected, exactly as any
+other out-of-range move already was. This keeps the walker away from
+the kinetically pathological region entirely, rather than trying (and,
+as shown, sometimes failing) to make that region tractable after the
+fact. `verify_window_coverage_randombg` checks the result is not
+*too* tight: for every production run, the reweighted P_beta(S) mass
+in the first/last 3 bins is checked at beta in {0, 0.5, 1, 1.5, 2} x
+beta_c and confirmed below 1e-3 (actual values: at most 2.05e-05,
+typically far smaller) -- see the per-run numbers in checkpoints,
+summarized below. As a secondary guard, `check_ln_g_anomalies` (any
+adjacent-ever-visited-bin step over 100, vs. the 6-11 healthy baseline)
+is now also required to be clear, in addition to the existing
+diversity gate, before the WL stall shortcut is allowed to fire at
+all -- a walk can range across most of its reachable bins and still
+carry one badly-skewed pair, which bin-count diversity alone does not
+catch.
+
+### Fairness check: does the methodology change affect already-clean seeds?
+
+Because fixing the two bugs changed the sampler itself, two previously
+clean seeds (`randombg` seed 0, `reglat` chain seed 0) were re-run
+under the new fixed-window method as a direct check, before mixing
+old- and new-method results into one dataset:
+
+| Seed | Old method beta_c | New method beta_c | Difference |
+|---|---|---|---|
+| randombg seed 0 | 5.892 | 5.894 | 0.002 |
+| reglat chain seed 0 | 6.420 | 6.412 | 0.008 |
+
+Both agree to well within the ~0.01-0.07 seed-to-seed spread already
+present in each ensemble. **The other three originally-clean seeds per
+model (randombg 2,3,4; reglat 1,4) are therefore kept from the original
+run, not re-run** -- they showed no `ln_g` anomalies and reached 10
+genuine round trips each. The three seeds that failed under the old
+method (randombg 1; reglat chain seeds 2,3) were restarted **from
+scratch** (not resumed from their corrupted checkpoints) under the new
+method; all three succeeded cleanly (no anomalies, 10 round trips,
+window coverage confirmed). The final n=50 dataset mixes methods by
+seed, with the mix stated plainly here rather than hidden, and backed
+by the two-seed consistency check above. The new method was also
+substantially faster where it mattered: the three originally-failed
+seeds took 1426-1784s total under the new method, vs. the old method's
+healthy seeds taking 2987-6924s (randombg) or 3166-3475s (reglat) --
+the fixed window has less histogram to flatten and no widening
+overhead.
+
+### beta_c at n=50
+
+| Model | Seed | Source | beta_c |
+|---|---|---|---|
+| Random background | 0 | new method | 5.8937 |
+| Random background | 1 | new method (restarted) | 6.0750 |
+| Random background | 2 | old method (kept) | 5.9237 |
+| Random background | 3 | old method (kept) | 5.9123 |
+| Random background | 4 | old method (kept) | 5.9917 |
+| Regular lattice | 0 | new method | 6.4120 |
+| Regular lattice | 1 | old method (kept) | 6.4247 |
+| Regular lattice | 2 | new method (restarted) | 6.4184 |
+| Regular lattice | 3 | new method (restarted) | 6.4075 |
+| Regular lattice | 4 | old method (kept) | 6.4328 |
+
+**Random background: beta_c = 5.959 +/- 0.033 (SEM), std = 0.075.**
+**Regular lattice: beta_c = 6.419 +/- 0.005 (SEM), std = 0.010.**
+Gap = 0.460, combined SEM = sqrt(0.033^2 + 0.005^2) = 0.0336,
+**z = 13.67**. The gap is overwhelmingly significant again at n=50,
+though less extreme than n=30's z=51.8 -- almost entirely because the
+random background's own cross-seed spread is larger at n=50 (SEM
+0.033 vs. 0.026), not because the gap itself shrank in absolute terms
+by much.
+
+**Relative shift: 7.16% at n=50, vs. 12.37% at n=30.** The regular
+lattice's own beta_c dropped from 11.095 (n=30) to 6.419 (n=50) --
+consistent with the expected 1/n-ish falloff for this model class --
+and the random background's gap *relative to it* shrank by nearly
+half. **The background-dependence of the transition looks like a
+finite-size effect that fades as n grows**, not a permanent,
+size-independent discrepancy between the two models. This is stated as
+what two data points (n=30, n=50) show, not as a confirmed asymptotic
+law -- a third size would be needed to fit a genuine 1/n-type falloff
+of the gap itself.
+
+### P_beta_c(S) shape
+
+Checked with the same mass-filtered `_peak_diagnostics` used
+throughout this project, on all 10 final seeds (reweighted at each
+seed's own located beta_c): **every one of the 10 is a single broad
+hump -- no double-peak structure, spurious or otherwise, at any
+seed.** This matches every other P_beta_c(S) examined in this project.
+
+### Hot- and cold-phase observables
+
+Same methodology as Stage 1 (5 fresh beta=0 fillings for hot; 5
+chains annealed to 4x each run's own located beta_c for cold), mean
++/- std across the 5 final seeds per model:
+
+| Observable | Random bg, hot | Reg. lattice, hot | Random bg, cold | Reg. lattice, cold |
+|---|---|---|---|---|
+| MM dimension | 2.014 +/- 0.048 | 1.885 +/- 0.000 | 3.603 +/- 0.103 | 3.603 +/- 0.072 |
+| Ordering fraction | 0.881 +/- 0.003 | 0.885 +/- 0.000 | 0.661 +/- 0.003 | 0.660 +/- 0.003 |
+| Height | 9.24 +/- 0.36 | 8.40 +/- 0.00 | 4.32 +/- 0.18 | 4.48 +/- 0.23 |
+| Occupied rows ("layers", of 200) | 44.52 +/- 0.44 | 44.60 +/- 0.00 | 22.76 +/- 1.24 | 20.36 +/- 0.78 |
+
+(The regular lattice's hot-phase values show exactly zero cross-seed
+std because the hot-phase fillings use fixed filling-seeds on the
+*same* fixed lattice regardless of chain seed -- a real zero, not a
+rounding artifact; only the cold phase depends on each chain's own
+located beta_c and therefore genuinely varies.)
+
+**The cold-phase ordering-fraction gap that was clearly present at
+n=30 (0.583 vs. 0.646, a difference of 0.063) has essentially closed
+by n=50 (0.661 vs. 0.660, a difference of 0.001).** The MM dimension
+in the cold phase converges too (2.73 vs. 2.87 at n=30, both noisy,
+to 3.60 vs. 3.60 at n=50, identical to 3 figures). Height is close at
+both n. The layer count still shows a modest residual difference
+(22.76 vs. 20.36, a gap of 2.4) -- smaller proportionally than at
+n=30. The hot phase remains close to background-independent at n=50,
+consistent with Stage 1, and consistent with both backgrounds' own
+beta=0 fillings resembling a 2D sprinkle equally well regardless of n.
+
+### Mixing: moves per WL stage and per round trip
+
+Preserved only for the seeds kept from the original run (the restarted
+and fairness-check seeds' per-stage/per-round-trip logs were not
+retained in the saved results, only aggregate timing and move counts)
+-- reported with that caveat, not silently extrapolated from too few
+seeds:
+
+| Model | Seed | Mean moves/WL stage | Mean moves/round trip |
+|---|---|---|---|
+| Random background | 2 | 6,259,474 | 25,887,000 |
+| Random background | 3 | 5,675,263 | 13,190,000 |
+| Random background | 4 | 7,737,000 | 3,662,000 |
+| Regular lattice | 1 | 4,604,375 | 8,712,000 |
+| Regular lattice | 4 | 7,446,316 | 4,776,000 |
+
+Moves-per-stage are comparable in order of magnitude between the two
+backgrounds (~4.6-7.7M). Moves-per-round-trip show large seed-to-seed
+variance within each background (3.7M-25.9M for random, 4.8M-8.7M for
+regular) -- too few seeds with preserved logs to draw a reliable
+per-move mixing-speed comparison between backgrounds at n=50; this
+is reported as inconclusive with this sample, not rounded to a
+conclusion either way.
+
+### Answer to the motivating question (Stage 2: n=50)
+
+**The transition's location still depends on the background being a
+regular grid at n=50 (z=13.67, not explainable by seed noise), but the
+relative size of the effect has shrunk by close to half (12.4% ->
+7.2%) compared to n=30, and the cold-phase observable gap that
+distinguished the two backgrounds most clearly at n=30 has nearly
+closed.** The qualitative picture is unchanged from Stage 1: a
+manifold-like hot phase that is close to background-independent, a
+more-ordered cold phase showing real but shrinking quantitative
+differences, and no confirmed first-order double-peak signature in
+P_beta_c(S) for either background at either n. Read plainly: this
+looks like a finite-size effect fading with system size, not a
+permanent background-dependence of the physics -- though two points
+(n=30, n=50) is not enough to fit the falloff itself with any
+confidence.
+
 ## Known limitations
 
 1. **Mechanism for the beta_c shift is unidentified.** Ruled out: a
@@ -349,18 +574,37 @@ real mechanism is.
    -- a finite-size/strongly-ordered-regime limitation of the
    sub-interval-sampling diagnostic itself, not of the background
    comparison.
-3. **n=50 (stage 2) not yet run.** The driver script
-   (`phase5_run_n.py`) takes `N=30` as a single top-level constant;
-   changing it to 50 is the only edit needed, but was not done in this
-   stage per the explicit instruction to treat n=50 as a separate,
-   later stage.
+3. **n=50's final dataset mixes two sampler methods by seed** (5 of 10
+   seeds re-run under the new fixed-window method, 5 kept from the
+   original adaptive-widen method) -- justified by a direct two-seed
+   consistency check (differences of 0.002 and 0.008, well within each
+   ensemble's own seed-to-seed spread) and stated plainly in the Stage
+   2 section, but a fully single-method n=50 dataset was not run.
 4. **Single eps (0.1), matching C&S's own d=2 choice** -- no
-   sensitivity check against other eps values attempted.
-5. **The regular lattice's unexpectedly poor WL mixing under this
-   pipeline** (4x the random background's wall time) is reported as an
-   observation with a plausible but unverified explanation (exact
-   periodic structure creating slow modes that disorder breaks up);
-   not independently investigated further.
+   sensitivity check against other eps values attempted, at either n.
+5. **The regular lattice's unexpectedly poor WL mixing seen at n=30**
+   (4x the random background's wall time under that stage's pipeline)
+   did not clearly repeat at n=50 once the sampler bugs were fixed and
+   the new method's seeds ran much faster than the old method's; the
+   wall-clock comparison at n=50 is confounded by the method mix (item
+   3) and not used to draw a mixing-speed conclusion there.
+6. **n=50's moves-per-stage/moves-per-round-trip mixing comparison is
+   based on only 3 (random) and 2 (regular) seeds** -- the restarted
+   and fairness-check seeds' logs were not retained -- too few to
+   support a confident per-move mixing-speed claim between backgrounds.
+7. **The n=50 fixed WL window was set from quantiles of pilot samples
+   (4000 sweeps each) and verified post-hoc (verify_window_coverage_randombg:
+   edge mass < 1e-3, typically < 1e-4, for beta in [0, 2*beta_c] on
+   every production run)** -- a real check, not a blind assumption,
+   but it was tuned for this n and eps and would need re-verifying,
+   not blindly reused, at a different size or coupling.
+8. **Only two system sizes (n=30, n=50) checked for the beta_c gap.**
+   The observation that the relative gap shrinks (12.4% -> 7.2%) is
+   consistent with a finite-size effect fading with n, but two points
+   cannot distinguish that from, say, a slower-than-1/n falloff that
+   plateaus at a nonzero value -- a third size (e.g. n=80, which needs
+   the multiword-bitset extension noted in the main draft's Outlook)
+   would be needed to fit the falloff with any confidence.
 
 ## Pass criteria, assessed against what was actually run
 
@@ -386,11 +630,25 @@ real mechanism is.
    no committed conclusion changed, and one latent false-positive
    (that would have affected Phase 4's lattice gas, had it been
    checked there) is now fixed for all callers.
+8. **Stage 2 (n=50) run, with the beta_c gap, phase observables, and
+   P_beta_c(S) shape all reported against n=30**: met; the gap
+   survives (z=13.67) but shrinks in relative size (12.4% -> 7.2%),
+   and the cold-phase observable gap most visible at n=30 has nearly
+   closed by n=50 -- reported plainly as a finite-size-looking effect,
+   not rounded to "resolved" or "unchanged."
+9. **Two sampler bugs found at n=50 fixed upstream, with regression
+   tests, and validated by a fairness check against unaffected seeds**:
+   met -- `_widen`'s flat-fill cliff (gradient extrapolation, clamped
+   both ways) and a genuine kinetic-bottleneck trap (fixed window,
+   no adaptive widening, window-coverage verification), plus a
+   stall-shortcut gate against both failure signatures. Two
+   previously-clean seeds re-run under the new method matched their
+   original beta_c to within 0.002 and 0.008.
 
 **Overall: this stage's goal -- build the comparison, answer the
 question plainly, and stress-test the headline number before trusting
-it -- is met at n=30.** n=50 is the natural next step, unchanged in
-method, to see whether the ~13% beta_c gap narrows, widens, or holds
-as n grows; the regular lattice's mixing-cost anomaly found here is
-also worth watching at n=50, since Phase 3b separately found mixing
-cost itself already rises steeply with size.
+it -- is now met at both n=30 and n=50.** The background-dependence of
+beta_c looks like a finite-size effect that fades with system size,
+not a permanent discrepancy; confirming that with any confidence would
+need a third size (n=80, blocked on the bitset engine's N<=64 limit
+without the multiword extension noted in the main draft's Outlook).

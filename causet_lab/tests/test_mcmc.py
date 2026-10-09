@@ -15,7 +15,10 @@ from causet_lab.mcmc.action import (
 )
 from causet_lab.mcmc.sampler import run_chain, run_chain_fast, integrated_autocorr_time
 from causet_lab.mcmc.fast_core import build_state, apply_swap_py, apply_swap_jit, action_from_counts
-from causet_lab.mcmc.muca import _peak_diagnostics, MIN_BARRIER_FOR_BIMODAL, MIN_PEAK_MASS_FRACTION
+from causet_lab.mcmc.muca import (
+    _peak_diagnostics, MIN_BARRIER_FOR_BIMODAL, MIN_PEAK_MASS_FRACTION, _widen,
+    locate_beta_c_variance_peak, check_ln_g_anomalies, LN_G_STEP_ANOMALY_THRESHOLD,
+)
 
 
 def test_2d_order_is_acyclic_and_closed():
@@ -233,3 +236,109 @@ def test_peak_diagnostics_mass_fraction_boundary():
                              amp2=mode_amp, floor=1e-10)
     diag = _peak_diagnostics(p)
     assert diag is not None
+
+
+# _widen is shared by all three WL loops (orders, lattice gas, random
+# background) whenever the edge-hit rate forces the histogram range to
+# grow. New bins must continue the LOCALLY OBSERVED ln_g slope (linear
+# extrapolation), not repeat the edge bin's value flatly: a flat block
+# of WIDEN_BINS=60 identical values doesn't track the true decaying
+# density of states, and once the walker reaches the FAR edge of that
+# artificial plateau, differential visitation opens an arbitrarily
+# large, unphysical gap there -- confirmed directly: an n=50
+# random-background run produced a 66,000+ ln_g cliff exactly at a
+# widened block's far edge, trapping the walker for 800+s. These tests
+# pin down the actual fix: slope-continuation, direction-clamped (ln_g
+# never extrapolated to exceed the edge value, since entropy only
+# decreases further into a tail) and magnitude-clamped (the per-bin
+# drop never exceeds the largest single step actually observed in the
+# edge window, so one noisy window can't compound into a steep plunge).
+def test_widen_extrapolates_the_local_slope_not_a_flat_repeat():
+    # Realistic cold-edge shape: ln_g rising toward the bulk (bin 0 is
+    # the tail edge). New low-side bins must continue DECREASING
+    # further into the tail, strictly below ln_g[0], not flat at it.
+    ln_g = np.array([10.0, 20.0, 30.0, 42.0])
+    H = np.array([5, 6, 7, 8])
+    new_ln_g, new_H, new_bin_lo, new_n_bins = _widen(ln_g, H, bin_lo=0.0, bin_width=1.0, n_bins=4, side="low", n_new=3)
+    assert new_n_bins == 7
+    assert new_bin_lo == -3.0
+    assert np.array_equal(new_ln_g[3:], ln_g)
+    assert np.all(new_H[:3] == 0), "new bins' histogram starts empty regardless"
+    assert np.all(new_ln_g[:3] < ln_g[0]), "must drop below the edge value, not sit flat at it"
+    assert np.all(np.diff(new_ln_g[:4]) > 0), "must increase monotonically toward the old range"
+
+    # Realistic hot-edge shape: ln_g falling away from the bulk (bin -1
+    # is the tail edge). New high-side bins must continue DECREASING
+    # further into the tail, strictly below ln_g[-1].
+    ln_g_hot = np.array([42.0, 30.0, 20.0, 10.0])
+    new_ln_g, new_H, new_bin_lo, new_n_bins = _widen(ln_g_hot, H, bin_lo=0.0, bin_width=1.0, n_bins=4, side="high", n_new=3)
+    assert new_n_bins == 7
+    assert new_bin_lo == 0.0
+    assert np.array_equal(new_ln_g[:4], ln_g_hot)
+    assert np.all(new_ln_g[4:] < ln_g_hot[-1]), "must drop below the edge value, not sit flat at it"
+    assert np.all(np.diff(new_ln_g[3:]) < 0), "must keep decreasing outward, continuing the observed slope"
+
+
+def test_widen_clamps_wrong_direction_slope_to_flat_not_unphysical_increase():
+    # The AVERAGE slope (not just one noisy step) points the "wrong"
+    # way: ln_g is net INCREASING all the way to the hot edge (steps
+    # [5, 7, 8], all positive), the opposite of a decaying tail. Must
+    # clamp to flat, never extrapolate that increase past the edge.
+    ln_g = np.array([10.0, 15.0, 22.0, 30.0])
+    H = np.array([5, 6, 7, 8])
+    new_ln_g, _, _, _ = _widen(ln_g, H, bin_lo=0.0, bin_width=1.0, n_bins=4, side="high", n_new=5)
+    assert np.all(new_ln_g[4:] <= ln_g[-1] + 1e-12), "must never exceed the edge value on the high side"
+    np.testing.assert_allclose(new_ln_g[4:], ln_g[-1])  # flat, not a wrong-direction extrapolation
+
+    # Mirror: ln_g net DECREASING toward the cold edge (steps [-8,-7,-5]),
+    # the opposite of rising into the bulk. Must clamp to flat.
+    ln_g2 = np.array([30.0, 22.0, 15.0, 10.0])
+    new_ln_g2, _, _, _ = _widen(ln_g2, H, bin_lo=0.0, bin_width=1.0, n_bins=4, side="low", n_new=5)
+    assert np.all(new_ln_g2[:5] <= ln_g2[0] + 1e-12), "must never exceed the edge value on the low side"
+    np.testing.assert_allclose(new_ln_g2[:5], ln_g2[0])
+
+
+def test_widen_pins_down_the_exact_extrapolation_formula():
+    # A clean, steadily-decreasing hot edge: steps = [-4, -5, -6],
+    # avg_slope = -5, max_abs_step = 6 -- direction is correct (falling
+    # away from the bulk), so per_bin_drop = min(max(5, 0), 6) = 5.
+    ln_g = np.array([42.0, 38.0, 33.0, 27.0])
+    H = np.array([5, 6, 7, 8])
+    new_ln_g, _, _, _ = _widen(ln_g, H, bin_lo=0.0, bin_width=1.0, n_bins=4, side="high", n_new=3)
+    np.testing.assert_allclose(new_ln_g[4:], [22.0, 17.0, 12.0])
+
+    # Mirror case on the low side: steps = [6, 5, 4] (rising toward the
+    # bulk from bin 0), avg_slope = 5, max_abs_step = 6 -> drop = 5.
+    ln_g_cold = np.array([27.0, 33.0, 38.0, 42.0])
+    new_ln_g2, _, _, _ = _widen(ln_g_cold, H, bin_lo=0.0, bin_width=1.0, n_bins=4, side="low", n_new=3)
+    np.testing.assert_allclose(new_ln_g2[:3], [12.0, 17.0, 22.0])
+
+
+# check_ln_g_anomalies is the cheap runtime guard added after finding
+# (by direct inspection of real n=50 checkpoints) adjacent-bin ln_g
+# steps of 101, 46967 and 66767 -- vs. 6-11 for every healthy run --
+# exactly at a widened block's far edge. Healthy smooth variation must
+# not be flagged; a real cliff must be, with the correct bin pair.
+def test_check_ln_g_anomalies_passes_smooth_data():
+    ln_g = np.array([0.0, 40.0, 85.0, 135.0, 180.0, 230.0, 270.0, 310.0])
+    ever_visited = np.ones(8, dtype=bool)
+    assert check_ln_g_anomalies(ln_g, ever_visited) == []
+
+
+def test_check_ln_g_anomalies_flags_a_real_cliff():
+    ln_g = np.array([0.0, 10.0, 20.0, 30.0, 40.0 + 50000.0, 50040.0, 50050.0])
+    ever_visited = np.ones(7, dtype=bool)
+    anomalies = check_ln_g_anomalies(ln_g, ever_visited)
+    assert len(anomalies) == 1
+    bin_a, bin_b, step = anomalies[0]
+    assert (bin_a, bin_b) == (3, 4)
+    assert abs(step) > LN_G_STEP_ANOMALY_THRESHOLD
+
+
+def test_check_ln_g_anomalies_skips_unvisited_bins_in_the_span():
+    # A huge raw difference that straddles a NEVER-visited bin (e.g. a
+    # freshly-widened, not-yet-reached bin) is not a live trap signature
+    # -- only adjacent pairs where BOTH bins are ever_visited count.
+    ln_g = np.array([0.0, 10.0, 20.0, 99999.0, 30.0])
+    ever_visited = np.array([True, True, True, False, True])
+    assert check_ln_g_anomalies(ln_g, ever_visited) == []

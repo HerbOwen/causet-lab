@@ -1,0 +1,338 @@
+[mcmc-study] controls at N=60 (eps-independent at beta=0)...
+[mcmc-study] controls: beta=0 mm_dim=1.99 (sprinkle 2.03), abundance_distance=0.054, max independent-chain z=1.02 -> dimension PASS, abundance PASS, balance PASS
+[mcmc-study] N= 30 eps=0.21 scout located beta*~0.91379 (0.6s); fine PT ladder has 15 points, 11 coarse-only points run in parallel
+[mcmc-study] N= 30 eps=0.21 fine-grid PT pass (sweeps=900) done (13.1s), min eff_samples=7.6 (target 50)
+[mcmc-study] N= 30 eps=0.21 under target -- escalating to sweeps=1800 and redoing
+[mcmc-study] N= 30 eps=0.21 fine-grid PT pass (sweeps=1800) done (38.0s), min eff_samples=13.7 (target 50)
+[mcmc-study] N= 30 eps=0.21 under target -- escalating to sweeps=3600 and redoing
+[mcmc-study] N= 30 eps=0.21 fine-grid PT pass (sweeps=3600) done (88.3s), min eff_samples=23.2 (target 50)
+[mcmc-study] N= 30 eps=0.21 fine-grid PT final (88.3s), swap rates [0.9  0.88 0.87 0.85 0.81 0.76 0.69 0.6  0.62 0.69 0.71 0.77 0.8  0.82], round trips [4, 1, 2, 3, 1, 4, 5, 1, 1, 5, 1, 3, 1, 1, 2]
+[mcmc-study] N= 30 eps=0.21 coarse-only points done (97.7s)
+[mcmc-study] N= 30 eps=0.21 beta=  0.00000 [coarse] <S>/N=+0.139 var(S)=     6.29 mm_dim=1.90 acc=1.00 tau~1.3 eff_min=37 
+[mcmc-study] N= 30 eps=0.21 beta=  0.03137 [coarse] <S>/N=+0.130 var(S)=     5.72 mm_dim=2.08 acc=0.99 tau~1.1 eff_min=74 
+[mcmc-study] N= 30 eps=0.21 beta=  0.05078 [coarse] <S>/N=+0.122 var(S)=     6.72 mm_dim=2.03 acc=0.98 tau~1.0 eff_min=65 
+[mcmc-study] N= 30 eps=0.21 beta=  0.08221 [coarse] <S>/N=+0.115 var(S)=     5.86 mm_dim=2.12 acc=0.96 tau~1.0 eff_min=64 
+[mcmc-study] N= 30 eps=0.21 beta=  0.13308 [coarse] <S>/N=+0.101 var(S)=     5.52 mm_dim=2.14 acc=0.94 tau~0.9 eff_min=75 
+[mcmc-study] N= 30 eps=0.21 beta=  0.21542 [coarse] <S>/N=+0.089 var(S)=     6.49 mm_dim=2.05 acc=0.90 tau~0.7 eff_min=96 
+[mcmc-study] N= 30 eps=0.21 beta=  0.34872 [coarse] <S>/N=+0.067 var(S)=     7.66 mm_dim=2.06 acc=0.83 tau~0.7 eff_min=101 
+[mcmc-study] N= 30 eps=0.21 beta=  0.56449 [fine/PT] <S>/N=+0.002 var(S)=     9.05 mm_dim=1.99 acc=0.71 tau~1.1 eff_min=299 
+[mcmc-study] N= 30 eps=0.21 beta=  0.62983 [fine/PT] <S>/N=-0.014 var(S)=     9.90 mm_dim=2.05 acc=0.67 tau~1.0 eff_min=299 
+[mcmc-study] N= 30 eps=0.21 beta=  0.69517 [fine/PT] <S>/N=-0.039 var(S)=    12.38 mm_dim=1.88 acc=0.64 tau~1.0 eff_min=296 
+[mcmc-study] N= 30 eps=0.21 beta=  0.76050 [fine/PT] <S>/N=-0.062 var(S)=    14.34 mm_dim=2.17 acc=0.59 tau~0.9 eff_min=350 
+[mcmc-study] N= 30 eps=0.21 beta=  0.82584 [fine/PT] <S>/N=-0.102 var(S)=    19.43 mm_dim=2.12 acc=0.55 tau~1.0 eff_min=311 
+[mcmc-study] N= 30 eps=0.21 beta=  0.89118 [fine/PT] <S>/N=-0.164 var(S)=    34.43 mm_dim=2.12 acc=0.49 tau~1.3 eff_min=251 
+[mcmc-study] N= 30 eps=0.21 beta=  0.91379 [coarse] <S>/N=-0.137 var(S)=    20.01 mm_dim=2.19 acc=0.49 tau~1.7 eff_min=37 
+[mcmc-study] N= 30 eps=0.21 beta=  0.95652 [fine/PT] <S>/N=-0.270 var(S)=    60.06 mm_dim=1.97 acc=0.41 tau~2.5 eff_min=93 
+[mcmc-study] N= 30 eps=0.21 beta=  1.02185 [fine/PT] <S>/N=-0.464 var(S)=   118.08 mm_dim=1.83 acc=0.31 tau~5.6 eff_min=46 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.21 beta=  1.08719 [fine/PT] <S>/N=-0.752 var(S)=   135.12 mm_dim=1.90 acc=0.19 tau~7.2 eff_min=36 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.21 beta=  1.15253 [fine/PT] <S>/N=-1.020 var(S)=    99.33 mm_dim=1.89 acc=0.12 tau~8.7 eff_min=23 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.21 beta=  1.21786 [fine/PT] <S>/N=-1.208 var(S)=    63.73 mm_dim=1.80 acc=0.08 tau~5.1 eff_min=48 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.21 beta=  1.28320 [fine/PT] <S>/N=-1.333 var(S)=    42.02 mm_dim=1.89 acc=0.06 tau~4.3 eff_min=66 
+[mcmc-study] N= 30 eps=0.21 beta=  1.34854 [fine/PT] <S>/N=-1.413 var(S)=    33.90 mm_dim=1.91 acc=0.05 tau~6.2 eff_min=44 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.21 beta=  1.41387 [fine/PT] <S>/N=-1.480 var(S)=    25.84 mm_dim=1.80 acc=0.04 tau~7.8 eff_min=32 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.21 beta=  1.47921 [fine/PT] <S>/N=-1.522 var(S)=    21.56 mm_dim=1.91 acc=0.03 tau~9.4 eff_min=33 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.21 beta=  2.39450 [coarse] <S>/N=-1.677 var(S)=     8.35 mm_dim=1.70 acc=0.02 tau~38.5 eff_min=6 (!UNCONVERGED, x4)
+[mcmc-study] N= 30 eps=0.21 beta=  3.87613 [coarse] <S>/N=-1.675 var(S)=     3.85 mm_dim=1.64 acc=0.01 tau~9.8 eff_min=23 
+[mcmc-study] N= 30 eps=0.21 beta=  6.27456 [coarse] <S>/N=-1.430 var(S)=    49.34 mm_dim=1.56 acc=0.00 tau~5.7 eff_min=25 
+[mcmc-study] N= 30 eps=0.21 scan done: beta_c=0.95652 (formula 1.04576 +/- 0.10875, z=0.15 -> PASS), peak height=60.1, width=1.17344, 8 UNCONVERGED points, histogram peaks=1 (98.0s)
+[mcmc-study] N= 30 eps=0.21 deep high-beta phase...
+[mcmc-study] N= 30 eps=0.21 deep beta=  5.2288 height=3.2+/-0.4 of=0.651+/-0.019 mm_dim=1.64 acc=0.135
+[mcmc-study] N= 30 eps=0.21 deep beta= 15.6864 height=3.6+/-0.5 of=0.648+/-0.032 mm_dim=1.65 acc=0.050
+[mcmc-study] N= 30 eps=0.21 deep-phase plateaued: True, height target PASS=True, of target PASS=True
+[mcmc-study] N= 30 eps=0.21 hysteresis check at beta_c=0.95652 (via PT)...
+[mcmc-study] N= 30 eps=0.21 hysteresis: random <S>=-8.10+/-0.17, layered <S>=-7.44+/-0.17, z=2.78 -> AGREE
+[mcmc-study] N= 30 eps=0.21 fully done in 153.8s
+[mcmc-study] N= 40 eps=0.21 scout located beta*~0.71958 (1.1s); fine PT ladder has 15 points, 11 coarse-only points run in parallel
+[mcmc-study] N= 40 eps=0.21 fine-grid PT pass (sweeps=900) done (26.8s), min eff_samples=5.2 (target 50)
+[mcmc-study] N= 40 eps=0.21 under target -- escalating to sweeps=1800 and redoing
+[mcmc-study] N= 40 eps=0.21 fine-grid PT pass (sweeps=1800) done (78.0s), min eff_samples=7.6 (target 50)
+[mcmc-study] N= 40 eps=0.21 under target -- escalating to sweeps=3600 and redoing
+[mcmc-study] N= 40 eps=0.21 fine-grid PT pass (sweeps=3600) done (180.3s), min eff_samples=6.5 (target 50)
+[mcmc-study] N= 40 eps=0.21 fine-grid PT final (180.3s), swap rates [0.88 0.87 0.85 0.86 0.82 0.74 0.56 0.44 0.5  0.69 0.73 0.77 0.79 0.8 ], round trips [1, 1, 2, 0, 1, 0, 1, 2, 1, 1, 1, 0, 0, 0, 0]
+[mcmc-study] N= 40 eps=0.21 coarse-only points done (200.9s)
+[mcmc-study] N= 40 eps=0.21 beta=  0.00000 [coarse] <S>/N=+0.102 var(S)=    11.35 mm_dim=2.05 acc=1.00 tau~0.9 eff_min=76 
+[mcmc-study] N= 40 eps=0.21 beta=  0.02471 [coarse] <S>/N=+0.086 var(S)=    11.35 mm_dim=1.93 acc=0.99 tau~1.1 eff_min=67 
+[mcmc-study] N= 40 eps=0.21 beta=  0.03999 [coarse] <S>/N=+0.096 var(S)=     9.90 mm_dim=2.15 acc=0.98 tau~0.9 eff_min=89 
+[mcmc-study] N= 40 eps=0.21 beta=  0.06474 [coarse] <S>/N=+0.080 var(S)=     9.90 mm_dim=1.94 acc=0.96 tau~0.8 eff_min=77 
+[mcmc-study] N= 40 eps=0.21 beta=  0.10479 [coarse] <S>/N=+0.076 var(S)=    10.78 mm_dim=1.94 acc=0.94 tau~0.7 eff_min=94 
+[mcmc-study] N= 40 eps=0.21 beta=  0.16964 [coarse] <S>/N=+0.057 var(S)=    10.72 mm_dim=2.17 acc=0.90 tau~1.0 eff_min=69 
+[mcmc-study] N= 40 eps=0.21 beta=  0.27460 [coarse] <S>/N=+0.015 var(S)=    14.21 mm_dim=2.12 acc=0.84 tau~1.3 eff_min=49 
+[mcmc-study] N= 40 eps=0.21 beta=  0.44452 [fine/PT] <S>/N=-0.037 var(S)=    15.97 mm_dim=2.04 acc=0.73 tau~1.0 eff_min=315 
+[mcmc-study] N= 40 eps=0.21 beta=  0.49597 [fine/PT] <S>/N=-0.060 var(S)=    18.18 mm_dim=2.23 acc=0.70 tau~0.9 eff_min=371 
+[mcmc-study] N= 40 eps=0.21 beta=  0.54742 [fine/PT] <S>/N=-0.087 var(S)=    20.15 mm_dim=2.10 acc=0.66 tau~0.8 eff_min=373 
+[mcmc-study] N= 40 eps=0.21 beta=  0.59887 [fine/PT] <S>/N=-0.122 var(S)=    27.49 mm_dim=2.16 acc=0.62 tau~1.1 eff_min=298 
+[mcmc-study] N= 40 eps=0.21 beta=  0.65032 [fine/PT] <S>/N=-0.151 var(S)=    36.88 mm_dim=2.03 acc=0.58 tau~1.1 eff_min=270 
+[mcmc-study] N= 40 eps=0.21 beta=  0.70177 [fine/PT] <S>/N=-0.221 var(S)=    67.10 mm_dim=2.11 acc=0.52 tau~1.6 eff_min=175 
+[mcmc-study] N= 40 eps=0.21 beta=  0.71958 [coarse] <S>/N=-0.351 var(S)=   269.65 mm_dim=1.94 acc=0.48 tau~9.5 eff_min=15 (!UNCONVERGED, x4)
+[mcmc-study] N= 40 eps=0.21 beta=  0.75322 [fine/PT] <S>/N=-0.384 var(S)=   206.35 mm_dim=1.96 acc=0.43 tau~7.7 eff_min=29 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  0.80467 [fine/PT] <S>/N=-0.761 var(S)=   500.10 mm_dim=2.01 acc=0.30 tau~17.3 eff_min=15 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  0.85612 [fine/PT] <S>/N=-1.456 var(S)=   401.33 mm_dim=1.80 acc=0.13 tau~15.2 eff_min=18 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  0.90758 [fine/PT] <S>/N=-1.827 var(S)=   184.19 mm_dim=1.80 acc=0.07 tau~12.3 eff_min=17 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  0.95903 [fine/PT] <S>/N=-2.009 var(S)=   111.51 mm_dim=1.80 acc=0.05 tau~13.3 eff_min=12 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  1.01048 [fine/PT] <S>/N=-2.121 var(S)=    75.59 mm_dim=1.74 acc=0.04 tau~19.3 eff_min=7 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  1.06193 [fine/PT] <S>/N=-2.206 var(S)=    60.16 mm_dim=1.78 acc=0.04 tau~21.5 eff_min=7 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  1.11338 [fine/PT] <S>/N=-2.271 var(S)=    46.07 mm_dim=1.75 acc=0.03 tau~19.4 eff_min=7 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  1.16483 [fine/PT] <S>/N=-2.327 var(S)=    35.69 mm_dim=1.74 acc=0.03 tau~10.9 eff_min=21 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.21 beta=  1.88558 [coarse] <S>/N=-2.572 var(S)=     6.92 mm_dim=1.68 acc=0.01 tau~49.4 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 40 eps=0.21 beta=  3.05232 [coarse] <S>/N=-2.550 var(S)=     8.85 mm_dim=1.61 acc=0.01 tau~37.1 eff_min=5 (!UNCONVERGED, x4)
+[mcmc-study] N= 40 eps=0.21 beta=  4.94100 [coarse] <S>/N=-2.477 var(S)=   122.57 mm_dim=1.64 acc=0.00 tau~68.8 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 40 eps=0.21 scan done: beta_c=0.70177 (formula 0.82350 +/- 0.06542, z=1.86 -> PASS), peak height=67.1, width=nan, 13 UNCONVERGED points, histogram peaks=1 (201.1s)
+[mcmc-study] N= 40 eps=0.21 deep high-beta phase...
+[mcmc-study] N= 40 eps=0.21 deep beta=  4.1175 height=3.6+/-0.5 of=0.665+/-0.024 mm_dim=1.61 acc=0.140
+[mcmc-study] N= 40 eps=0.21 deep beta= 12.3525 height=3.8+/-0.4 of=0.681+/-0.033 mm_dim=1.58 acc=0.051
+[mcmc-study] N= 40 eps=0.21 deep-phase plateaued: True, height target PASS=True, of target PASS=True
+[mcmc-study] N= 40 eps=0.21 hysteresis check at beta_c=0.70177 (via PT)...
+[mcmc-study] N= 40 eps=0.21 hysteresis: random <S>=-8.83+/-0.18, layered <S>=-9.34+/-0.21, z=1.85 -> AGREE
+[mcmc-study] N= 40 eps=0.21 fully done in 310.3s
+[mcmc-study] N= 50 eps=0.21 scout located beta*~1.55153 (2.0s); fine PT ladder has 15 points, 11 coarse-only points run in parallel
+[mcmc-study] N= 50 eps=0.21 fine-grid PT pass (sweeps=900) done (54.9s), min eff_samples=3.5 (target 50)
+[mcmc-study] N= 50 eps=0.21 under target -- escalating to sweeps=1800 and redoing
+[mcmc-study] N= 50 eps=0.21 fine-grid PT pass (sweeps=1800) done (159.1s), min eff_samples=3.7 (target 50)
+[mcmc-study] N= 50 eps=0.21 escalation not improving eff_samples (3.5 -> 3.7) -- stopping early
+[mcmc-study] N= 50 eps=0.21 fine-grid PT final (159.1s), swap rates [0.45 0.55 0.64 0.67 0.71 0.72 0.74 0.76 0.75 0.71 0.7  0.72 0.75 0.75], round trips [0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0]
+[mcmc-study] N= 50 eps=0.21 coarse-only points done (186.4s)
+[mcmc-study] N= 50 eps=0.21 beta=  0.00000 [coarse] <S>/N=+0.083 var(S)=    17.24 mm_dim=2.18 acc=1.00 tau~0.9 eff_min=85 
+[mcmc-study] N= 50 eps=0.21 beta=  0.02033 [coarse] <S>/N=+0.074 var(S)=    19.84 mm_dim=1.94 acc=0.99 tau~0.7 eff_min=80 
+[mcmc-study] N= 50 eps=0.21 beta=  0.03291 [coarse] <S>/N=+0.068 var(S)=    15.70 mm_dim=2.05 acc=0.98 tau~0.8 eff_min=81 
+[mcmc-study] N= 50 eps=0.21 beta=  0.05327 [coarse] <S>/N=+0.063 var(S)=    16.36 mm_dim=2.14 acc=0.97 tau~0.8 eff_min=114 
+[mcmc-study] N= 50 eps=0.21 beta=  0.08623 [coarse] <S>/N=+0.046 var(S)=    17.71 mm_dim=2.10 acc=0.94 tau~0.8 eff_min=82 
+[mcmc-study] N= 50 eps=0.21 beta=  0.13958 [coarse] <S>/N=+0.034 var(S)=    18.56 mm_dim=2.05 acc=0.91 tau~0.7 eff_min=78 
+[mcmc-study] N= 50 eps=0.21 beta=  0.22595 [coarse] <S>/N=-0.003 var(S)=    21.41 mm_dim=1.97 acc=0.85 tau~1.1 eff_min=67 
+[mcmc-study] N= 50 eps=0.21 beta=  0.36577 [coarse] <S>/N=-0.054 var(S)=    24.99 mm_dim=2.06 acc=0.75 tau~1.0 eff_min=72 
+[mcmc-study] N= 50 eps=0.21 beta=  0.59210 [coarse] <S>/N=-0.227 var(S)=    71.65 mm_dim=2.00 acc=0.56 tau~1.4 eff_min=50 
+[mcmc-study] N= 50 eps=0.21 beta=  0.95846 [fine/PT] <S>/N=-2.393 var(S)=   257.66 mm_dim=1.65 acc=0.06 tau~26.0 eff_min=5 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.06940 [fine/PT] <S>/N=-2.678 var(S)=    86.73 mm_dim=1.68 acc=0.04 tau~21.2 eff_min=6 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.18034 [fine/PT] <S>/N=-2.796 var(S)=    55.60 mm_dim=1.69 acc=0.03 tau~30.0 eff_min=5 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.29127 [fine/PT] <S>/N=-2.896 var(S)=    58.28 mm_dim=1.58 acc=0.03 tau~36.1 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.40221 [fine/PT] <S>/N=-2.987 var(S)=    55.44 mm_dim=1.64 acc=0.02 tau~40.6 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.51314 [fine/PT] <S>/N=-3.039 var(S)=    47.17 mm_dim=1.56 acc=0.02 tau~41.9 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.55153 [coarse] <S>/N=-3.287 var(S)=    36.25 mm_dim=1.64 acc=0.02 tau~73.2 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 50 eps=0.21 beta=  1.62408 [fine/PT] <S>/N=-3.089 var(S)=    46.26 mm_dim=1.61 acc=0.02 tau~42.7 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.73501 [fine/PT] <S>/N=-3.136 var(S)=    39.65 mm_dim=1.61 acc=0.02 tau~43.1 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.84595 [fine/PT] <S>/N=-3.171 var(S)=    38.93 mm_dim=1.60 acc=0.02 tau~43.0 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  1.95689 [fine/PT] <S>/N=-3.203 var(S)=    38.83 mm_dim=1.62 acc=0.01 tau~42.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  2.06782 [fine/PT] <S>/N=-3.252 var(S)=    36.06 mm_dim=1.59 acc=0.01 tau~42.6 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  2.17876 [fine/PT] <S>/N=-3.279 var(S)=    34.29 mm_dim=1.65 acc=0.01 tau~43.5 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  2.28970 [fine/PT] <S>/N=-3.307 var(S)=    29.13 mm_dim=1.61 acc=0.01 tau~43.1 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  2.40063 [fine/PT] <S>/N=-3.335 var(S)=    23.82 mm_dim=1.60 acc=0.01 tau~43.1 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  2.51157 [fine/PT] <S>/N=-3.357 var(S)=    19.34 mm_dim=1.67 acc=0.01 tau~42.8 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.21 beta=  4.06564 [coarse] <S>/N=-3.228 var(S)=   172.11 mm_dim=1.57 acc=0.00 tau~49.1 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 50 eps=0.21 scan done: beta_c=0.59210 (formula 0.67761 +/- 0.04459, z=1.92 -> PASS), peak height=71.7, width=nan, 17 UNCONVERGED points, histogram peaks=1 (186.5s)
+[mcmc-study] N= 50 eps=0.21 deep high-beta phase...
+[mcmc-study] N= 50 eps=0.21 deep beta=  3.3880 height=4.0+/-0.0 of=0.689+/-0.015 mm_dim=1.56 acc=0.145
+[mcmc-study] N= 50 eps=0.21 deep beta= 10.1641 height=4.2+/-0.4 of=0.713+/-0.020 mm_dim=1.51 acc=0.052
+[mcmc-study] N= 50 eps=0.21 deep-phase plateaued: True, height target PASS=True, of target PASS=True
+[mcmc-study] N= 50 eps=0.21 hysteresis check at beta_c=0.59210 (via PT)...
+[mcmc-study] N= 50 eps=0.21 hysteresis: random <S>=-119.66+/-0.50, layered <S>=-170.20+/-0.13, z=98.54 -> DISAGREE
+[mcmc-study] N= 50 eps=0.21 fully done in 280.4s
+[mcmc-study] N= 60 eps=0.21 scout located beta*~0.81350 (3.3s); fine PT ladder has 15 points, 11 coarse-only points run in parallel
+[mcmc-study] N= 60 eps=0.21 swap rates [0.61 0.14 0.45 0.54 0.59 0.61 0.65 0.67 0.67 0.74 0.77 0.81 0.81 0.83] -- densifying ladder 15 -> 16 points and redoing PT
+[mcmc-study] N= 60 eps=0.21 fine-grid PT pass (sweeps=900) done (122.0s), min eff_samples=3.6 (target 50)
+[mcmc-study] N= 60 eps=0.21 under target -- escalating to sweeps=1800 and redoing
+[mcmc-study] N= 60 eps=0.21 fine-grid PT pass (sweeps=1800) done (300.4s), min eff_samples=3.7 (target 50)
+[mcmc-study] N= 60 eps=0.21 escalation not improving eff_samples (3.6 -> 3.7) -- stopping early
+[mcmc-study] N= 60 eps=0.21 fine-grid PT final (300.4s), swap rates [0.64 0.51 0.32 0.34 0.54 0.55 0.67 0.7  0.74 0.74 0.77 0.8  0.79 0.78
+ 0.78], round trips [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+[mcmc-study] N= 60 eps=0.21 coarse-only points done (355.3s)
+[mcmc-study] N= 60 eps=0.21 beta=  0.00000 [coarse] <S>/N=+0.067 var(S)=    24.90 mm_dim=1.98 acc=1.00 tau~1.0 eff_min=56 
+[mcmc-study] N= 60 eps=0.21 beta=  0.01725 [coarse] <S>/N=+0.055 var(S)=    23.56 mm_dim=2.04 acc=0.99 tau~0.8 eff_min=76 
+[mcmc-study] N= 60 eps=0.21 beta=  0.02793 [coarse] <S>/N=+0.047 var(S)=    24.09 mm_dim=2.04 acc=0.98 tau~1.1 eff_min=56 
+[mcmc-study] N= 60 eps=0.21 beta=  0.04521 [coarse] <S>/N=+0.049 var(S)=    21.47 mm_dim=1.96 acc=0.97 tau~1.0 eff_min=63 
+[mcmc-study] N= 60 eps=0.21 beta=  0.07319 [coarse] <S>/N=+0.038 var(S)=    23.13 mm_dim=2.01 acc=0.95 tau~1.1 eff_min=53 
+[mcmc-study] N= 60 eps=0.21 beta=  0.11847 [coarse] <S>/N=+0.019 var(S)=    23.87 mm_dim=1.97 acc=0.92 tau~1.0 eff_min=64 
+[mcmc-study] N= 60 eps=0.21 beta=  0.19178 [coarse] <S>/N=-0.011 var(S)=    26.09 mm_dim=2.02 acc=0.86 tau~0.8 eff_min=94 
+[mcmc-study] N= 60 eps=0.21 beta=  0.31045 [coarse] <S>/N=-0.072 var(S)=    32.78 mm_dim=2.14 acc=0.77 tau~0.8 eff_min=91 
+[mcmc-study] N= 60 eps=0.21 beta=  0.50254 [fine/PT] <S>/N=-0.223 var(S)=    79.30 mm_dim=2.17 acc=0.60 tau~1.2 eff_min=129 
+[mcmc-study] N= 60 eps=0.21 beta=  0.56071 [fine/PT] <S>/N=-0.379 var(S)=   349.41 mm_dim=1.97 acc=0.50 tau~3.7 eff_min=27 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  0.58979 [fine/PT] <S>/N=-0.783 var(S)=  1385.31 mm_dim=2.10 acc=0.38 tau~12.6 eff_min=10 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  0.61887 [fine/PT] <S>/N=-2.007 var(S)=  1880.17 mm_dim=1.89 acc=0.17 tau~30.9 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  0.67704 [fine/PT] <S>/N=-2.707 var(S)=   547.60 mm_dim=1.81 acc=0.08 tau~32.2 eff_min=5 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  0.73521 [fine/PT] <S>/N=-2.974 var(S)=   423.90 mm_dim=1.76 acc=0.06 tau~38.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  0.79337 [fine/PT] <S>/N=-3.199 var(S)=   302.40 mm_dim=1.70 acc=0.05 tau~33.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  0.81350 [coarse] <S>/N=-3.555 var(S)=   128.98 mm_dim=1.77 acc=0.03 tau~61.3 eff_min=5 (!UNCONVERGED, x4)
+[mcmc-study] N= 60 eps=0.21 beta=  0.85154 [fine/PT] <S>/N=-3.328 var(S)=   193.60 mm_dim=1.75 acc=0.04 tau~34.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  0.90970 [fine/PT] <S>/N=-3.440 var(S)=   155.57 mm_dim=1.68 acc=0.03 tau~32.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  0.96787 [fine/PT] <S>/N=-3.506 var(S)=   127.41 mm_dim=1.63 acc=0.03 tau~38.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  1.02604 [fine/PT] <S>/N=-3.563 var(S)=   127.76 mm_dim=1.67 acc=0.03 tau~40.1 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  1.08420 [fine/PT] <S>/N=-3.626 var(S)=   120.24 mm_dim=1.69 acc=0.02 tau~41.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  1.14237 [fine/PT] <S>/N=-3.668 var(S)=   118.41 mm_dim=1.63 acc=0.02 tau~43.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  1.20053 [fine/PT] <S>/N=-3.729 var(S)=   123.86 mm_dim=1.60 acc=0.02 tau~44.7 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  1.25870 [fine/PT] <S>/N=-3.776 var(S)=   120.59 mm_dim=1.63 acc=0.02 tau~43.7 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  1.31686 [fine/PT] <S>/N=-3.825 var(S)=   114.15 mm_dim=1.70 acc=0.02 tau~45.5 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.21 beta=  2.13170 [coarse] <S>/N=-3.407 var(S)=   483.76 mm_dim=1.59 acc=0.01 tau~62.7 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 60 eps=0.21 beta=  3.45072 [coarse] <S>/N=-3.309 var(S)=   228.18 mm_dim=1.59 acc=0.01 tau~56.2 eff_min=5 (!UNCONVERGED, x4)
+[mcmc-study] N= 60 eps=0.21 scan done: beta_c=0.50254 (formula 0.57512 +/- 0.03286, z=2.21 -> PASS), peak height=79.3, width=nan, 18 UNCONVERGED points, histogram peaks=1 (355.4s)
+[mcmc-study] N= 60 eps=0.21 deep high-beta phase...
+[mcmc-study] N= 60 eps=0.21 deep beta=  2.8756 height=4.2+/-0.4 of=0.696+/-0.017 mm_dim=1.55 acc=0.152
+[mcmc-study] N= 60 eps=0.21 deep beta=  8.6268 height=4.4+/-0.5 of=0.716+/-0.016 mm_dim=1.51 acc=0.057
+[mcmc-study] N= 60 eps=0.21 deep-phase plateaued: True, height target PASS=True, of target PASS=True
+[mcmc-study] N= 60 eps=0.21 hysteresis check at beta_c=0.50254 (via PT)...
+[mcmc-study] N= 60 eps=0.21 hysteresis: random <S>=-13.38+/-0.27, layered <S>=-200.84+/-0.83, z=214.01 -> DISAGREE
+[mcmc-study] N= 60 eps=0.21 fully done in 518.6s
+[mcmc-study] N= 30 eps=0.50 scout located beta*~0.11732 (0.5s); fine PT ladder has 15 points, 11 coarse-only points run in parallel
+[mcmc-study] N= 30 eps=0.50 fine-grid PT pass (sweeps=900) done (13.5s), min eff_samples=6.7 (target 50)
+[mcmc-study] N= 30 eps=0.50 under target -- escalating to sweeps=1800 and redoing
+[mcmc-study] N= 30 eps=0.50 fine-grid PT pass (sweeps=1800) done (38.9s), min eff_samples=19.3 (target 50)
+[mcmc-study] N= 30 eps=0.50 under target -- escalating to sweeps=3600 and redoing
+[mcmc-study] N= 30 eps=0.50 fine-grid PT pass (sweeps=3600) done (89.6s), min eff_samples=8.1 (target 50)
+[mcmc-study] N= 30 eps=0.50 fine-grid PT final (89.6s), swap rates [0.9  0.88 0.86 0.86 0.83 0.81 0.78 0.74 0.7  0.69 0.69 0.75 0.8  0.83], round trips [4, 3, 5, 4, 3, 2, 6, 5, 6, 4, 5, 8, 6, 5, 4]
+[mcmc-study] N= 30 eps=0.50 coarse-only points done (100.3s)
+[mcmc-study] N= 30 eps=0.50 beta=  0.00000 [coarse] <S>/N=+0.140 var(S)=   261.89 mm_dim=1.95 acc=1.00 tau~1.1 eff_min=76 
+[mcmc-study] N= 30 eps=0.50 beta=  0.00403 [coarse] <S>/N=+0.069 var(S)=   286.02 mm_dim=2.04 acc=0.99 tau~0.7 eff_min=103 
+[mcmc-study] N= 30 eps=0.50 beta=  0.00652 [coarse] <S>/N=+0.095 var(S)=   302.86 mm_dim=2.04 acc=0.98 tau~0.8 eff_min=97 
+[mcmc-study] N= 30 eps=0.50 beta=  0.01056 [coarse] <S>/N=+0.026 var(S)=   277.90 mm_dim=1.98 acc=0.96 tau~1.2 eff_min=50 
+[mcmc-study] N= 30 eps=0.50 beta=  0.01709 [coarse] <S>/N=-0.023 var(S)=   305.22 mm_dim=1.91 acc=0.94 tau~0.8 eff_min=77 
+[mcmc-study] N= 30 eps=0.50 beta=  0.02766 [coarse] <S>/N=-0.146 var(S)=   337.04 mm_dim=2.08 acc=0.90 tau~1.1 eff_min=65 
+[mcmc-study] N= 30 eps=0.50 beta=  0.04477 [coarse] <S>/N=-0.360 var(S)=   401.12 mm_dim=2.06 acc=0.83 tau~0.7 eff_min=111 
+[mcmc-study] N= 30 eps=0.50 beta=  0.07248 [fine/PT] <S>/N=-0.767 var(S)=   565.04 mm_dim=2.06 acc=0.70 tau~1.1 eff_min=246 
+[mcmc-study] N= 30 eps=0.50 beta=  0.08087 [fine/PT] <S>/N=-0.941 var(S)=   624.78 mm_dim=2.10 acc=0.66 tau~1.1 eff_min=264 
+[mcmc-study] N= 30 eps=0.50 beta=  0.08925 [fine/PT] <S>/N=-1.118 var(S)=   722.92 mm_dim=2.13 acc=0.62 tau~1.2 eff_min=232 
+[mcmc-study] N= 30 eps=0.50 beta=  0.09764 [fine/PT] <S>/N=-1.361 var(S)=   952.04 mm_dim=2.02 acc=0.57 tau~1.0 eff_min=287 
+[mcmc-study] N= 30 eps=0.50 beta=  0.10603 [fine/PT] <S>/N=-1.605 var(S)=  1113.01 mm_dim=1.96 acc=0.52 tau~1.3 eff_min=222 
+[mcmc-study] N= 30 eps=0.50 beta=  0.11442 [fine/PT] <S>/N=-2.002 var(S)=  1496.80 mm_dim=2.11 acc=0.47 tau~1.2 eff_min=271 
+[mcmc-study] N= 30 eps=0.50 beta=  0.11732 [coarse] <S>/N=-2.163 var(S)=  1905.52 mm_dim=1.98 acc=0.45 tau~3.0 eff_min=37 
+[mcmc-study] N= 30 eps=0.50 beta=  0.12281 [fine/PT] <S>/N=-2.525 var(S)=  2172.19 mm_dim=2.17 acc=0.41 tau~1.4 eff_min=214 
+[mcmc-study] N= 30 eps=0.50 beta=  0.13120 [fine/PT] <S>/N=-3.228 var(S)=  3044.77 mm_dim=1.94 acc=0.34 tau~2.2 eff_min=122 
+[mcmc-study] N= 30 eps=0.50 beta=  0.13959 [fine/PT] <S>/N=-4.211 var(S)=  3957.16 mm_dim=1.80 acc=0.27 tau~3.4 eff_min=74 
+[mcmc-study] N= 30 eps=0.50 beta=  0.14797 [fine/PT] <S>/N=-5.480 var(S)=  4405.05 mm_dim=1.81 acc=0.19 tau~4.3 eff_min=67 
+[mcmc-study] N= 30 eps=0.50 beta=  0.15636 [fine/PT] <S>/N=-6.658 var(S)=  4123.96 mm_dim=2.00 acc=0.14 tau~5.3 eff_min=38 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.50 beta=  0.16475 [fine/PT] <S>/N=-7.700 var(S)=  3168.16 mm_dim=1.84 acc=0.11 tau~7.7 eff_min=35 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.50 beta=  0.17314 [fine/PT] <S>/N=-8.564 var(S)=  2358.73 mm_dim=1.82 acc=0.09 tau~19.0 eff_min=13 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.50 beta=  0.18153 [fine/PT] <S>/N=-9.130 var(S)=  1799.25 mm_dim=1.84 acc=0.07 tau~22.9 eff_min=9 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.50 beta=  0.18992 [fine/PT] <S>/N=-9.556 var(S)=  1364.68 mm_dim=1.71 acc=0.06 tau~21.3 eff_min=8 (!UNCONVERGED, x1)
+[mcmc-study] N= 30 eps=0.50 beta=  0.30743 [coarse] <S>/N=-11.574 var(S)=   269.63 mm_dim=1.83 acc=0.03 tau~60.3 eff_min=5 (!UNCONVERGED, x4)
+[mcmc-study] N= 30 eps=0.50 beta=  0.49766 [coarse] <S>/N=-11.320 var(S)=  1267.34 mm_dim=1.68 acc=0.02 tau~80.2 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 30 eps=0.50 beta=  0.80560 [coarse] <S>/N=-10.639 var(S)=   696.23 mm_dim=1.54 acc=0.01 tau~56.5 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 30 eps=0.50 scan done: beta_c=0.14797 (formula 0.13427 +/- 0.01576, z=0.84 -> PASS), peak height=4405.1, width=nan, 8 UNCONVERGED points, histogram peaks=2 (100.6s)
+[mcmc-study] N= 30 eps=0.50 deep high-beta phase...
+[mcmc-study] N= 30 eps=0.50 deep beta=  0.6713 height=3.8+/-0.4 of=0.663+/-0.018 mm_dim=1.61 acc=0.144
+[mcmc-study] N= 30 eps=0.50 deep beta=  2.0140 height=4.0+/-0.6 of=0.708+/-0.037 mm_dim=1.52 acc=0.054
+[mcmc-study] N= 30 eps=0.50 deep-phase plateaued: True, height target PASS=True, of target PASS=True
+[mcmc-study] N= 30 eps=0.50 hysteresis check at beta_c=0.14797 (via PT)...
+[mcmc-study] N= 30 eps=0.50 hysteresis: random <S>=-164.39+/-1.45, layered <S>=-191.93+/-1.68, z=12.42 -> DISAGREE
+[mcmc-study] N= 30 eps=0.50 fully done in 156.1s
+[mcmc-study] N= 40 eps=0.50 scout located beta*~0.26795 (1.1s); fine PT ladder has 15 points, 11 coarse-only points run in parallel
+[mcmc-study] N= 40 eps=0.50 fine-grid PT pass (sweeps=900) done (31.8s), min eff_samples=3.7 (target 50)
+[mcmc-study] N= 40 eps=0.50 under target -- escalating to sweeps=1800 and redoing
+[mcmc-study] N= 40 eps=0.50 fine-grid PT pass (sweeps=1800) done (92.1s), min eff_samples=3.6 (target 50)
+[mcmc-study] N= 40 eps=0.50 escalation not improving eff_samples (3.7 -> 3.6) -- stopping early
+[mcmc-study] N= 40 eps=0.50 fine-grid PT final (92.1s), swap rates [0.55 0.66 0.66 0.65 0.68 0.77 0.79 0.78 0.76 0.72 0.72 0.72 0.76 0.8 ], round trips [0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 2, 0, 1]
+[mcmc-study] N= 40 eps=0.50 coarse-only points done (108.8s)
+[mcmc-study] N= 40 eps=0.50 beta=  0.00000 [coarse] <S>/N=+0.087 var(S)=   461.52 mm_dim=2.19 acc=1.00 tau~0.7 eff_min=104 
+[mcmc-study] N= 40 eps=0.50 beta=  0.00351 [coarse] <S>/N=+0.003 var(S)=   435.11 mm_dim=2.02 acc=0.99 tau~1.0 eff_min=77 
+[mcmc-study] N= 40 eps=0.50 beta=  0.00568 [coarse] <S>/N=+0.069 var(S)=   441.67 mm_dim=1.94 acc=0.98 tau~0.9 eff_min=64 
+[mcmc-study] N= 40 eps=0.50 beta=  0.00920 [coarse] <S>/N=-0.025 var(S)=   505.55 mm_dim=2.03 acc=0.96 tau~0.9 eff_min=82 
+[mcmc-study] N= 40 eps=0.50 beta=  0.01489 [coarse] <S>/N=-0.060 var(S)=   489.68 mm_dim=2.05 acc=0.94 tau~0.8 eff_min=77 
+[mcmc-study] N= 40 eps=0.50 beta=  0.02411 [coarse] <S>/N=-0.177 var(S)=   515.80 mm_dim=2.01 acc=0.90 tau~1.2 eff_min=59 
+[mcmc-study] N= 40 eps=0.50 beta=  0.03902 [coarse] <S>/N=-0.406 var(S)=   648.71 mm_dim=2.18 acc=0.83 tau~0.8 eff_min=67 
+[mcmc-study] N= 40 eps=0.50 beta=  0.06317 [coarse] <S>/N=-0.816 var(S)=   865.37 mm_dim=1.88 acc=0.71 tau~0.8 eff_min=63 
+[mcmc-study] N= 40 eps=0.50 beta=  0.10226 [coarse] <S>/N=-2.472 var(S)=  3101.04 mm_dim=2.06 acc=0.44 tau~2.9 eff_min=35 
+[mcmc-study] N= 40 eps=0.50 beta=  0.16553 [fine/PT] <S>/N=-10.561 var(S)=  3129.58 mm_dim=1.80 acc=0.08 tau~34.5 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.18469 [fine/PT] <S>/N=-11.342 var(S)=  2603.62 mm_dim=1.74 acc=0.06 tau~26.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.20385 [fine/PT] <S>/N=-11.984 var(S)=  2182.55 mm_dim=1.58 acc=0.05 tau~36.8 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.22301 [fine/PT] <S>/N=-12.633 var(S)=  2341.63 mm_dim=1.61 acc=0.04 tau~44.6 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.24217 [fine/PT] <S>/N=-13.089 var(S)=  2523.74 mm_dim=1.71 acc=0.04 tau~45.6 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.26132 [fine/PT] <S>/N=-13.493 var(S)=  2536.69 mm_dim=1.62 acc=0.03 tau~46.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.26795 [coarse] <S>/N=-15.492 var(S)=  3528.80 mm_dim=1.69 acc=0.03 tau~53.1 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 40 eps=0.50 beta=  0.28048 [fine/PT] <S>/N=-13.877 var(S)=  2351.46 mm_dim=1.63 acc=0.03 tau~46.2 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.29964 [fine/PT] <S>/N=-14.151 var(S)=  2213.29 mm_dim=1.62 acc=0.03 tau~45.5 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.31880 [fine/PT] <S>/N=-14.443 var(S)=  2074.72 mm_dim=1.63 acc=0.03 tau~46.0 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.33796 [fine/PT] <S>/N=-14.702 var(S)=  2025.13 mm_dim=1.63 acc=0.02 tau~45.8 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.35712 [fine/PT] <S>/N=-14.956 var(S)=  1928.86 mm_dim=1.66 acc=0.02 tau~45.6 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.37628 [fine/PT] <S>/N=-15.278 var(S)=  1838.84 mm_dim=1.60 acc=0.02 tau~45.7 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.39544 [fine/PT] <S>/N=-15.600 var(S)=  1553.37 mm_dim=1.59 acc=0.02 tau~46.2 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.41460 [fine/PT] <S>/N=-15.849 var(S)=  1494.33 mm_dim=1.68 acc=0.02 tau~45.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.43376 [fine/PT] <S>/N=-16.070 var(S)=  1404.21 mm_dim=1.65 acc=0.02 tau~45.8 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 40 eps=0.50 beta=  0.70215 [coarse] <S>/N=-13.226 var(S)=  1331.99 mm_dim=1.58 acc=0.01 tau~42.1 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 40 eps=0.50 scan done: beta_c=0.10226 (formula 0.11702 +/- 0.00962, z=1.54 -> PASS), peak height=3101.0, width=nan, 17 UNCONVERGED points, histogram peaks=1 (108.9s)
+[mcmc-study] N= 40 eps=0.50 deep high-beta phase...
+[mcmc-study] N= 40 eps=0.50 deep beta=  0.5851 height=4.4+/-0.5 of=0.681+/-0.012 mm_dim=1.58 acc=0.144
+[mcmc-study] N= 40 eps=0.50 deep beta=  1.7554 height=4.8+/-0.4 of=0.731+/-0.026 mm_dim=1.48 acc=0.053
+[mcmc-study] N= 40 eps=0.50 deep-phase plateaued: True, height target PASS=False, of target PASS=True
+[mcmc-study] N= 40 eps=0.50 hysteresis check at beta_c=0.10226 (via PT)...
+[mcmc-study] N= 40 eps=0.50 hysteresis: random <S>=-422.43+/-1.73, layered <S>=-666.72+/-0.73, z=130.31 -> DISAGREE
+[mcmc-study] N= 40 eps=0.50 fully done in 165.8s
+[mcmc-study] N= 50 eps=0.50 scout located beta*~0.23231 (2.0s); fine PT ladder has 15 points, 11 coarse-only points run in parallel
+[mcmc-study] N= 50 eps=0.50 fine-grid PT pass (sweeps=900) done (57.8s), min eff_samples=3.5 (target 50)
+[mcmc-study] N= 50 eps=0.50 under target -- escalating to sweeps=1800 and redoing
+[mcmc-study] N= 50 eps=0.50 fine-grid PT pass (sweeps=1800) done (167.5s), min eff_samples=3.6 (target 50)
+[mcmc-study] N= 50 eps=0.50 escalation not improving eff_samples (3.5 -> 3.6) -- stopping early
+[mcmc-study] N= 50 eps=0.50 fine-grid PT final (167.5s), swap rates [0.45 0.62 0.64 0.63 0.67 0.69 0.65 0.7  0.73 0.61 0.62 0.69 0.67 0.52], round trips [2, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1]
+[mcmc-study] N= 50 eps=0.50 coarse-only points done (195.4s)
+[mcmc-study] N= 50 eps=0.50 beta=  0.00000 [coarse] <S>/N=+0.084 var(S)=   647.40 mm_dim=2.02 acc=1.00 tau~1.1 eff_min=61 
+[mcmc-study] N= 50 eps=0.50 beta=  0.00304 [coarse] <S>/N=+0.047 var(S)=   573.94 mm_dim=2.16 acc=0.99 tau~0.9 eff_min=55 
+[mcmc-study] N= 50 eps=0.50 beta=  0.00493 [coarse] <S>/N=-0.010 var(S)=   727.94 mm_dim=2.06 acc=0.98 tau~0.8 eff_min=80 
+[mcmc-study] N= 50 eps=0.50 beta=  0.00798 [coarse] <S>/N=-0.037 var(S)=   690.80 mm_dim=1.99 acc=0.96 tau~0.9 eff_min=65 
+[mcmc-study] N= 50 eps=0.50 beta=  0.01291 [coarse] <S>/N=-0.087 var(S)=   791.61 mm_dim=1.97 acc=0.94 tau~0.9 eff_min=67 
+[mcmc-study] N= 50 eps=0.50 beta=  0.02090 [coarse] <S>/N=-0.206 var(S)=   677.48 mm_dim=1.97 acc=0.91 tau~0.9 eff_min=65 
+[mcmc-study] N= 50 eps=0.50 beta=  0.03383 [coarse] <S>/N=-0.373 var(S)=   867.42 mm_dim=2.05 acc=0.84 tau~1.2 eff_min=64 
+[mcmc-study] N= 50 eps=0.50 beta=  0.05477 [coarse] <S>/N=-0.851 var(S)=  1149.25 mm_dim=2.09 acc=0.73 tau~1.0 eff_min=71 
+[mcmc-study] N= 50 eps=0.50 beta=  0.08865 [coarse] <S>/N=-2.073 var(S)=  3657.32 mm_dim=2.02 acc=0.51 tau~1.9 eff_min=44 
+[mcmc-study] N= 50 eps=0.50 beta=  0.14351 [fine/PT] <S>/N=-11.367 var(S)=  6301.28 mm_dim=1.86 acc=0.08 tau~24.1 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.16012 [fine/PT] <S>/N=-12.677 var(S)=  5114.82 mm_dim=1.78 acc=0.06 tau~35.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.17673 [fine/PT] <S>/N=-13.430 var(S)=  4044.41 mm_dim=1.79 acc=0.05 tau~35.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.19334 [fine/PT] <S>/N=-14.122 var(S)=  3477.90 mm_dim=1.76 acc=0.04 tau~38.2 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.20995 [fine/PT] <S>/N=-14.676 var(S)=  3508.89 mm_dim=1.68 acc=0.04 tau~43.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.22656 [fine/PT] <S>/N=-15.215 var(S)=  3781.41 mm_dim=1.68 acc=0.03 tau~46.2 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.23231 [coarse] <S>/N=-17.973 var(S)= 10606.02 mm_dim=1.70 acc=0.02 tau~78.0 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 50 eps=0.50 beta=  0.24317 [fine/PT] <S>/N=-15.617 var(S)=  3859.03 mm_dim=1.56 acc=0.03 tau~47.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.25978 [fine/PT] <S>/N=-16.023 var(S)=  4659.36 mm_dim=1.70 acc=0.03 tau~48.1 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.27639 [fine/PT] <S>/N=-16.429 var(S)=  4824.00 mm_dim=1.53 acc=0.03 tau~48.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.29300 [fine/PT] <S>/N=-16.780 var(S)=  5344.61 mm_dim=1.59 acc=0.02 tau~47.6 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.30961 [fine/PT] <S>/N=-17.374 var(S)=  5071.73 mm_dim=1.56 acc=0.02 tau~46.5 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.32622 [fine/PT] <S>/N=-17.883 var(S)=  4540.94 mm_dim=1.54 acc=0.02 tau~47.0 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.34283 [fine/PT] <S>/N=-18.346 var(S)=  4015.97 mm_dim=1.55 acc=0.02 tau~46.9 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.35944 [fine/PT] <S>/N=-18.773 var(S)=  4597.78 mm_dim=1.60 acc=0.02 tau~47.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.37605 [fine/PT] <S>/N=-19.306 var(S)=  4346.73 mm_dim=1.56 acc=0.02 tau~45.9 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 50 eps=0.50 beta=  0.60874 [coarse] <S>/N=-15.537 var(S)=  6970.92 mm_dim=1.58 acc=0.01 tau~70.8 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 50 eps=0.50 scan done: beta_c=0.08865 (formula 0.10146 +/- 0.00663, z=1.93 -> PASS), peak height=3657.3, width=nan, 17 UNCONVERGED points, histogram peaks=1 (195.5s)
+[mcmc-study] N= 50 eps=0.50 deep high-beta phase...
+[mcmc-study] N= 50 eps=0.50 deep beta=  0.5073 height=4.6+/-0.5 of=0.711+/-0.016 mm_dim=1.52 acc=0.149
+[mcmc-study] N= 50 eps=0.50 deep beta=  1.5218 height=4.6+/-0.5 of=0.720+/-0.032 mm_dim=1.50 acc=0.054
+[mcmc-study] N= 50 eps=0.50 deep-phase plateaued: True, height target PASS=False, of target PASS=True
+[mcmc-study] N= 50 eps=0.50 hysteresis check at beta_c=0.08865 (via PT)...
+[mcmc-study] N= 50 eps=0.50 hysteresis: random <S>=-568.37+/-2.45, layered <S>=-1087.29+/-1.02, z=195.62 -> DISAGREE
+[mcmc-study] N= 50 eps=0.50 fully done in 290.8s
+[mcmc-study] N= 60 eps=0.50 scout located beta*~0.12575 (3.6s); fine PT ladder has 15 points, 11 coarse-only points run in parallel
+[mcmc-study] N= 60 eps=0.50 fine-grid PT pass (sweeps=900) done (91.2s), min eff_samples=3.6 (target 50)
+[mcmc-study] N= 60 eps=0.50 under target -- escalating to sweeps=1800 and redoing
+[mcmc-study] N= 60 eps=0.50 fine-grid PT pass (sweeps=1800) done (265.3s), min eff_samples=3.5 (target 50)
+[mcmc-study] N= 60 eps=0.50 escalation not improving eff_samples (3.6 -> 3.5) -- stopping early
+[mcmc-study] N= 60 eps=0.50 fine-grid PT final (265.3s), swap rates [0.69 0.54 0.36 0.24 0.59 0.64 0.65 0.7  0.69 0.68 0.72 0.72 0.73 0.59], round trips [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+[mcmc-study] N= 60 eps=0.50 coarse-only points done (321.8s)
+[mcmc-study] N= 60 eps=0.50 beta=  0.00000 [coarse] <S>/N=+0.075 var(S)=   812.14 mm_dim=2.06 acc=1.00 tau~0.7 eff_min=111 
+[mcmc-study] N= 60 eps=0.50 beta=  0.00267 [coarse] <S>/N=+0.018 var(S)=   830.42 mm_dim=1.98 acc=0.99 tau~0.8 eff_min=90 
+[mcmc-study] N= 60 eps=0.50 beta=  0.00432 [coarse] <S>/N=-0.002 var(S)=   873.87 mm_dim=1.92 acc=0.98 tau~1.0 eff_min=67 
+[mcmc-study] N= 60 eps=0.50 beta=  0.00699 [coarse] <S>/N=-0.015 var(S)=   880.11 mm_dim=1.95 acc=0.97 tau~0.9 eff_min=58 
+[mcmc-study] N= 60 eps=0.50 beta=  0.01131 [coarse] <S>/N=-0.062 var(S)=   967.33 mm_dim=2.06 acc=0.95 tau~1.3 eff_min=53 
+[mcmc-study] N= 60 eps=0.50 beta=  0.01831 [coarse] <S>/N=-0.224 var(S)=   992.69 mm_dim=2.10 acc=0.91 tau~1.0 eff_min=73 
+[mcmc-study] N= 60 eps=0.50 beta=  0.02965 [coarse] <S>/N=-0.404 var(S)=  1065.91 mm_dim=2.05 acc=0.85 tau~1.0 eff_min=69 
+[mcmc-study] N= 60 eps=0.50 beta=  0.04799 [coarse] <S>/N=-0.802 var(S)=  1402.01 mm_dim=2.06 acc=0.75 tau~0.8 eff_min=81 
+[mcmc-study] N= 60 eps=0.50 beta=  0.07768 [fine/PT] <S>/N=-1.842 var(S)=  3537.29 mm_dim=2.14 acc=0.55 tau~0.9 eff_min=168 
+[mcmc-study] N= 60 eps=0.50 beta=  0.08667 [fine/PT] <S>/N=-2.597 var(S)=  6459.56 mm_dim=2.04 acc=0.46 tau~1.6 eff_min=102 
+[mcmc-study] N= 60 eps=0.50 beta=  0.09566 [fine/PT] <S>/N=-4.486 var(S)= 21459.31 mm_dim=1.90 acc=0.33 tau~8.0 eff_min=16 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.10465 [fine/PT] <S>/N=-9.483 var(S)= 37835.50 mm_dim=1.86 acc=0.17 tau~20.9 eff_min=6 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.11364 [fine/PT] <S>/N=-13.687 var(S)= 16135.55 mm_dim=1.89 acc=0.09 tau~43.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.12264 [fine/PT] <S>/N=-14.652 var(S)= 14599.41 mm_dim=1.78 acc=0.07 tau~43.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.12575 [coarse] <S>/N=-19.383 var(S)= 16649.11 mm_dim=1.71 acc=0.04 tau~89.7 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 60 eps=0.50 beta=  0.13163 [fine/PT] <S>/N=-15.604 var(S)= 12857.71 mm_dim=1.73 acc=0.06 tau~43.8 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.14062 [fine/PT] <S>/N=-16.587 var(S)= 12443.78 mm_dim=1.72 acc=0.05 tau~44.4 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.14961 [fine/PT] <S>/N=-17.128 var(S)= 11546.93 mm_dim=1.69 acc=0.04 tau~44.6 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.15860 [fine/PT] <S>/N=-17.807 var(S)= 10295.28 mm_dim=1.76 acc=0.04 tau~45.7 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.16759 [fine/PT] <S>/N=-18.276 var(S)=  9953.03 mm_dim=1.70 acc=0.04 tau~45.5 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.17658 [fine/PT] <S>/N=-18.684 var(S)= 10118.97 mm_dim=1.65 acc=0.03 tau~46.3 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.18557 [fine/PT] <S>/N=-19.145 var(S)=  9679.42 mm_dim=1.60 acc=0.03 tau~47.1 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.19456 [fine/PT] <S>/N=-19.606 var(S)= 10840.65 mm_dim=1.63 acc=0.03 tau~47.0 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.20356 [fine/PT] <S>/N=-20.211 var(S)= 14323.19 mm_dim=1.69 acc=0.03 tau~46.7 eff_min=4 (!UNCONVERGED, x1)
+[mcmc-study] N= 60 eps=0.50 beta=  0.32951 [coarse] <S>/N=-17.419 var(S)=  5381.27 mm_dim=1.64 acc=0.01 tau~73.8 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 60 eps=0.50 beta=  0.53340 [coarse] <S>/N=-17.490 var(S)=  5224.04 mm_dim=1.62 acc=0.01 tau~96.7 eff_min=4 (!UNCONVERGED, x4)
+[mcmc-study] N= 60 eps=0.50 scan done: beta_c=0.08667 (formula 0.08890 +/- 0.00494, z=0.45 -> PASS), peak height=6459.6, width=nan, 16 UNCONVERGED points, histogram peaks=1 (321.9s)
+[mcmc-study] N= 60 eps=0.50 deep high-beta phase...
+[mcmc-study] N= 60 eps=0.50 deep beta=  0.4445 height=4.6+/-0.5 of=0.706+/-0.011 mm_dim=1.53 acc=0.155
+[mcmc-study] N= 60 eps=0.50 deep beta=  1.3335 height=5.2+/-0.7 of=0.728+/-0.010 mm_dim=1.48 acc=0.057
+[mcmc-study] N= 60 eps=0.50 deep-phase plateaued: True, height target PASS=False, of target PASS=True
+[mcmc-study] N= 60 eps=0.50 hysteresis check at beta_c=0.08667 (via PT)...
+[mcmc-study] N= 60 eps=0.50 hysteresis: random <S>=-155.84+/-2.48, layered <S>=-1535.67+/-2.48, z=393.53 -> DISAGREE
+[mcmc-study] N= 60 eps=0.50 fully done in 477.7s
+[mcmc-study] wrote C:\Users\Latim\OneDrive\Desktop\New folder\causet_lab\results\phase3\mcmc_2d_report.md
+[mcmc-study] total time 2365.1s

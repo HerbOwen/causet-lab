@@ -68,7 +68,10 @@ causet_lab/
   results/
     phase2/ .. phase5/  One report per phase, each citing exact git
                         commits for every number (see paper.md's
-                        citation convention).
+                        citation convention). phase2/phase3/phase3b
+                        also hold that phase's generated PNG plots,
+                        saved alongside the report as companion
+                        artifacts rather than embedded inline.
     writeup/            paper.md / .html / .pdf (the full write-up),
                         email_draft.md.
 scripts/                Rescued, repo-relative driver and diagnostic

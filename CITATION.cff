@@ -6,8 +6,8 @@ version: "1.0.0"
 date-released: "2026-10-09"
 license: MIT
 authors:
-  - family-names: "TODO-fill-in-before-publishing"
-    given-names: "TODO-fill-in-before-publishing"
+  - family-names: "Owenby"
+    given-names: "Herb"
     # email: optional -- add only if you want it public
 repository-code: "TODO-fill-in-once-the-repository-has-a-public-URL"
 abstract: >
@@ -22,7 +22,7 @@ preferred-citation:
   type: report
   title: "An open-source multicanonical sampler for 2D causal set quantum gravity: validation and a random-background lattice-gas comparison"
   authors:
-    - family-names: "TODO-fill-in-before-publishing"
-      given-names: "TODO-fill-in-before-publishing"
+    - family-names: "Owenby"
+      given-names: "Herb"
   date-released: "2026-10-09"
   notes: "Independent project report, v1 -- not peer reviewed. See results/writeup/full_report.md."

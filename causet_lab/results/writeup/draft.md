@@ -412,8 +412,7 @@ cold-phase MM dimension converges too (2.73/2.87 -> 3.60/3.60). The
 hot phase remains close to background-independent, and all 10 n=50
 P_beta_c(S) curves (5 per background) are single broad humps, no
 double-peak signature at either background
-[`results/phase5/random_background_report.md @ [TBD: this
-session's commit]`, Stage 2 section].
+[`results/phase5/random_background_report.md @ 743a94b`, Stage 2 section].
 
 **Read plainly**: the background-dependence of the transition looks
 like a finite-size effect that fades with system size, not a
@@ -646,7 +645,7 @@ throughout):
 | Lattice gas | 30 | 0.1 | 1613.7s | 948.2s | 2561.8s (~42.7 min) | same |
 | Random background (5 realizations) | 30 | 0.1 | 387.3-1435.5s | 141.1-275.6s | 1623.9s total (all 5, 4 cores) | `results/phase5/random_background_report.md @ 3ae1ad5` |
 | Regular lattice, matched pipeline (5 chain seeds) | 30 | 0.1 | 1345.0-5704.3s | 511.1-1057.9s | 6659.9s total (all 5, 4 cores) | same report, matched-pipeline rerun section |
-| Random background (5 realizations, mixed method) | 50 | 0.1 | 1180.3-2745.1s | 245.6-4178.4s | 17590.5s total (all 5, 4 cores) | `results/phase5/random_background_report.md @ [TBD: this session's commit]`, Stage 2 section |
+| Random background (5 realizations, mixed method) | 50 | 0.1 | 1180.3-2745.1s | 245.6-4178.4s | 17590.5s total (all 5, 4 cores) | `results/phase5/random_background_report.md @ 743a94b`, Stage 2 section |
 | Regular lattice via rbg pipeline (5 chain seeds, mixed method) | 50 | 0.1 | 1291.7-2765.9s | 281.5-1398.7s | 12194.7s total (all 5, 4 cores) | same, Stage 2 section |
 
 **Multiprocessing**: Phase 5 stage 1 runs 5 independent realizations
@@ -672,9 +671,7 @@ z=13.67), cold-phase observable gap nearly closes, no double-peak
 signature at any of the 10 n=50 seeds; the two further sampler bugs
 found while getting that result, fixed upstream with regression tests
 (Section 6); the Appendix table's n=50 timing rows. All cited to
-`results/phase5/random_background_report.md @ [TBD: this session's
-commit -- fill in after committing muca.py, random_bg.py,
-lattice_gas.py, test_mcmc.py and both report files together]`.
+`results/phase5/random_background_report.md @ 743a94b`.
 
 Still open:
 

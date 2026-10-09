@@ -81,7 +81,9 @@ causet_lab/
                         artifacts rather than embedded inline.
     writeup/            note.md / .pdf (3-4 page summary, read first),
                         full_report.md / .html / .pdf (the full
-                        write-up), email_draft.md.
+                        write-up). A draft outreach email also lives
+                        here locally (email_draft.md) but is
+                        git-ignored, not part of this repo.
 scripts/                Rescued, repo-relative driver and diagnostic
   phase3_followup/      scripts that actually produced the numbers in
   phase3b/              results/*.md and full_report.md. Organized by the

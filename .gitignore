@@ -3,3 +3,6 @@ __pycache__/
 .pytest_cache/
 *.log
 .claude/
+
+# Personal outreach draft -- local reference only, not for the public repo.
+causet_lab/results/writeup/email_draft.md

@@ -334,5 +334,5 @@
 [mcmc-study] N= 60 eps=0.50 hysteresis check at beta_c=0.08667 (via PT)...
 [mcmc-study] N= 60 eps=0.50 hysteresis: random <S>=-155.84+/-2.48, layered <S>=-1535.67+/-2.48, z=393.53 -> DISAGREE
 [mcmc-study] N= 60 eps=0.50 fully done in 477.7s
-[mcmc-study] wrote C:\Users\Latim\OneDrive\Desktop\New folder\causet_lab\results\phase3\mcmc_2d_report.md
+[mcmc-study] wrote causet_lab\results\phase3\mcmc_2d_report.md
 [mcmc-study] total time 2365.1s
